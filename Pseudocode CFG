@@ -1,0 +1,89 @@
+Java Reader Class
+LinkedList ReadFile (StringPath)
+try
+  Create new File with Path parameter
+    If File exists then
+      For all lines in file
+        Add line to the list
+      End For
+    Else
+      Throw File Not Found Exception
+    end else
+    end if
+    end try
+   catch File not found
+      list equals empty
+      display error message
+   end catch
+return Linked List of type String
+
+
+
+Java Parser
+Global Linked List of String Linked lists
+  Linked list of String Linked lists parse Java Methods with parameter String Linked List File Content
+    Create new Bracket Stack
+    For all String lines in Linked List
+      If Stack empty
+        If line converted to lowercase contains keyword "public" or "private" or "protected"
+          If next line is not null and find open bracket method equals true
+            Create new String linked list
+            Push "{" to stack
+          End if
+        End if
+      Else
+        Add string line to String Linked List
+        If line contains "{"
+          Push "{" to stack
+        End If
+        Else if line contains "}"
+          Pop from Stack
+        End If
+        If Stack is empty
+          Add String Linked List to Link List
+        End If
+      End if
+    End For
+  Return Linked list of String Linked lists
+
+
+
+Private boolean find open bracket( String CurrentLine, String NextLine)
+  If current line contains "{"
+    return true
+  Else if next line contains "{"
+    return true
+  End If
+  Else return false
+  End else
+  End if
+
+
+Node Class
+  Private String thisNode
+  Private integer identifier
+  private Node Linked List
+  getters and setters blah blah
+
+
+
+Node Linked List normalCFG ( LinkedList String LInkedList)
+For all String Linked List from Linked List String LinkedList
+  String Linked List called current list equals current String linked List
+  For all String lines in current list
+    If line in lowercase contains keyword "try"
+      parse try
+      add nodes to graph
+    Else If line in lowercase contains keyword "if"
+      parse if
+      add nodes to graph
+    Else If line in lowercase contains keyword "for"
+      parse for
+      add nodes to graph
+    Else If line in lowercase contains keyword "do while"
+      parse do while
+      add nodes to graph
+    Else If line in lowercase contains keyword "switch"
+      parse switch
+      add nodes to graph
+    Else
