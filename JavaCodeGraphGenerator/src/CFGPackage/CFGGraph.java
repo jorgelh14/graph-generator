@@ -164,6 +164,9 @@ public abstract class CFGGraph {
 
 	protected boolean isMethodCall(String codeLine){
 
+		if(codeLine == null)
+			return false;
+
 		if(codeLine.toLowerCase().contains("public") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")"))
 			return true;
 		if(codeLine.toLowerCase().contains("protected") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")"))
@@ -176,6 +179,9 @@ public abstract class CFGGraph {
 
 	protected boolean isIfStatement(String codeLine){
 
+		if(codeLine == null)
+			return false;
+
 		if(codeLine.toLowerCase().contains("if") && codeLine.toLowerCase().contains("(") 
 				&& codeLine.toLowerCase().contains(")") 
 				&& !codeLine.toLowerCase().contains("else")
@@ -186,6 +192,9 @@ public abstract class CFGGraph {
 	}
 
 	protected boolean isElseStatement(String codeLine){
+
+		if(codeLine == null)
+			return false;
 
 		if(codeLine.toLowerCase().contains("else ") && codeLine.toLowerCase().contains("if") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
@@ -199,6 +208,9 @@ public abstract class CFGGraph {
 
 	protected boolean isForStatement(String codeLine){
 
+		if(codeLine == null)
+			return false;
+
 		if(codeLine.toLowerCase().contains("for") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
 
@@ -207,6 +219,9 @@ public abstract class CFGGraph {
 
 	protected boolean isWhileStatement(String codeLine){
 
+		if(codeLine == null)
+			return false;
+
 		if(codeLine.toLowerCase().contains("while") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
 
@@ -214,6 +229,9 @@ public abstract class CFGGraph {
 	}
 
 	protected boolean isDoWhileStatement(String codeLine){
+
+		if(codeLine == null)
+			return false;
 
 		if(codeLine.toLowerCase().contains("do") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("while") && !codeLine.toLowerCase().contains("system.out") )
 			return true;
@@ -227,6 +245,9 @@ public abstract class CFGGraph {
 
 	protected boolean isSwitchStatement(String codeLine){
 
+		if(codeLine == null)
+			return false;
+
 		if(codeLine.toLowerCase().contains("switch") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
 		if(codeLine.toLowerCase().contains("switch") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && !codeLine.toLowerCase().contains("system.out"))
@@ -236,11 +257,17 @@ public abstract class CFGGraph {
 	}
 	protected boolean isTryStatement(String codeLine){
 
+		if(codeLine == null)
+			return false;
+
 		if(codeLine.toLowerCase().contains("try") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
 		return false;
 	}
 	protected boolean isSwitchCaseFound(String codeLine){
+
+		if(codeLine == null)
+			return false;
 
 		if(codeLine.toLowerCase().contains("case") && codeLine.toLowerCase().contains(":") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
@@ -249,15 +276,21 @@ public abstract class CFGGraph {
 	}
 	protected boolean isCatchStatement(String codeLine){
 
+		if(codeLine == null)
+			return false;
+
 		if(codeLine.toLowerCase().contains("catch") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && codeLine.toLowerCase().contains("{") && codeLine.toLowerCase().contains("exception") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
 		if(codeLine.toLowerCase().contains("catch") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
-		
+
 		return false;
 	}
 
 	protected boolean isSwitchDefaultFound(String codeLine){
+
+		if(codeLine == null)
+			return false;
 
 		if(codeLine.toLowerCase().contains("default") && codeLine.toLowerCase().contains(":") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
@@ -266,6 +299,9 @@ public abstract class CFGGraph {
 	}
 
 	protected boolean isBreakFound(String codeLine){
+
+		if(codeLine == null)
+			return false;
 
 		if(codeLine.toLowerCase().contains("break") && codeLine.toLowerCase().contains(";") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
@@ -353,7 +389,7 @@ public abstract class CFGGraph {
 			}
 			Node newNode = new Node("Join",(biggestIdentifier+1));
 			this.allNodes.add(newNode);//ADDING 'JOIN' NODE TO THE GLOBAL List
-			
+
 			for(int i = 0; i<identifiersForJoinNode.size();i++){
 				previousNodeIdentifier = identifiersForJoinNode.get(i);
 				Edge newEdge = this.createEdge(previousNodeIdentifier, newNode.getIdentifier());
@@ -490,5 +526,37 @@ public abstract class CFGGraph {
 		}
 		return false;
 
+	}
+	protected boolean findIdentifierInNodes(LinkedList<Node> allNodes, int identifier){
+		for(int i=0;i< allNodes.size();i++){
+			if(identifier == allNodes.get(i).getIdentifier()){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected String getTextFromNode(LinkedList<Node> allNodes,int identifier){
+		for(int i=0;i< allNodes.size();i++){
+			if(identifier == allNodes.get(i).getIdentifier()){
+				return allNodes.get(i).getThisNodeText();
+			}
+		}
+		return "";
+	}
+	protected LinkedList<String> getLinesOfCodeFromNode(LinkedList<Node> allNodes,int identifier){
+		for(int i=0;i< allNodes.size();i++){
+			if(identifier == allNodes.get(i).getIdentifier()){
+				return allNodes.get(i).getLinesOfCode();
+			}
+		}
+		return null;
+	}
+
+	protected boolean isJoinNode(LinkedList<Node> allNodes,int identifier){
+
+		if(allNodes.get(identifier).getThisNodeText().toLowerCase().equals("join"))
+			return true;
+		return false;
 	}
 }

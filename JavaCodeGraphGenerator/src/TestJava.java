@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 
 
 public class TestJava {
@@ -80,6 +82,11 @@ public class TestJava {
 		}catch(Exception e){
 			System.out.println(e.toString());
 			e.printStackTrace();
+		}
+		
+		System.out.println("WE ARE AFTER CACTH");
+		for(int o = 0;o<10;o++){
+			System.out.println("A NEW FOR LOOP");
 		}
 	}
 

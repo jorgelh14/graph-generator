@@ -138,6 +138,8 @@ public class NormalCFG extends CFGGraph{
 				identifier++;//NEW NODE IDENTIFIER
 
 			}else if(isCatchStatement(javaContentData[i]) == true){
+				if(catchIdentifiers == null)
+					catchIdentifiers = new LinkedList<Integer>();
 				if(newNode != null){
 					//IF THE PREVIOUS NODE IS A 'JOIN', IT'LL CREATE AN EDGE BETWEEN THE CURRENT NODE AND THE 'JOIN'
 					this.createJoinEdge(currentNodes,newNode);
@@ -159,7 +161,7 @@ public class NormalCFG extends CFGGraph{
 					nodeNumbering++;
 					identifier++;//NEW NODE IDENTIFIER
 
-					catchIdentifiers = new LinkedList<Integer>();
+
 					catchIdentifiers.add(newNode.getIdentifier());
 				}
 			}
@@ -180,6 +182,7 @@ public class NormalCFG extends CFGGraph{
 			}
 			else if(isTryStatement(javaContentData[i]) == true && i == 0){
 				tryIdentifiers = new LinkedList<Integer>();
+
 			}
 			else  if(javaContentData[i].trim().equals("{") || javaContentData[i].trim().equals("}")){
 				//DO NOTHING
@@ -252,9 +255,14 @@ public class NormalCFG extends CFGGraph{
 				identifier = currentBlock.getIdentifier();
 
 
+
 				//UPDATING OUR LOCAL VARIABLES AFTER RECURSION
 				currentNodes = currentBlock.getCurrentNodes();
 				currentEdges = currentBlock.getCurrentEdges();
+
+				while(findIdentifierInNodes(currentNodes, identifier) == true){
+					identifier++;
+				}
 
 
 				//SINCE WE SAVED THE DATA FROM PREVIOUS NODE, NOW WE NEED TO EMPTY THE NODE TO CREATE A NEW ONE
@@ -384,8 +392,24 @@ public class NormalCFG extends CFGGraph{
 			identifiersForJoinNode = new LinkedList<Integer>();
 		}
 
+		
+
+		if(statement.equals("try")){
+			
+			for(int z =(currentNodes.size()-1); z>0; z--){
+				String firstLineOfNode = "";
+				if(isJoinNode(currentNodes, z) == false){
+					firstLineOfNode = currentNodes.get(z).getLinesOfCode().get(0);
+				}
+				
+				if(!firstLineOfNode.equals("") && isCatchStatement(firstLineOfNode) == false){
+					identifiersForJoinNode.add(currentNodes.get(z).getIdentifier());
+					break;
+				}
+			}
+		}
 		//THIS SHOULD ONLY HAPPEN IN THE NODES TO BE LINKED IS ONLY ONE, THIS MEANS THAT THE NEXT SECOND EDGE TO THE JOIN SHOULD COME FROM THE PARENT NODE
-		if(identifiersForJoinNode.size() <= 1)
+		if(identifiersForJoinNode.size() <= 1 )
 			identifiersForJoinNode.add(previousNodeIdentifier);
 
 		//THIS STATEMENT WILL CREATE AN EDGE FROM THE LAST NODE OF THE LOOP, TO THE LOOP STATEMENT IFSELF TO REPRESENT THE RECURSION INSIDE A LOOP
