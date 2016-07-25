@@ -18,9 +18,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class CFGVisualization {
+public class CFGVisualization extends IOManager {
+	public CFGVisualization(String fileName){
+		createGraphViz(fileName);
+	}
 	
-	public void createGraphViz(String filePath){
+	private void createGraphViz(String filePath){
 		
 			GraphViz graph = new GraphViz();
 			graph.addln(graph.start_graph());
@@ -59,9 +62,10 @@ public class CFGVisualization {
 			//System.out.println(graph.getDotSource());//testing purposes
 			graph.increaseDpi();   // 106 dpi from java api
 
+			String fileName = filePath.replaceAll(".xml","");
 			String type = "pdf";		//can be changed to dot, fig, pdf, ps, svg, png, and plain. Just replace gif
 			String repesentationType= "dot";// can be changed to neato, fdp, sfdp, twopi, circo.
-			File out = new File("graphRep." + type);    // change export location here
+			File out = new File(fileName + "." + type);    // change export location here
 			graph.writeGraphToFile( graph.getGraph(graph.getDotSource(), type, repesentationType), out );
 			try {
 				Desktop.getDesktop().open(out);

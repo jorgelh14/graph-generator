@@ -23,43 +23,47 @@ public class NormalCFG extends CFGGraph{
 
 
 
-	public void generateGraph(LinkedList<String> methods) {
+	public void generateGraph(String fileData) {
+		LinkedList<String> methods = new LinkedList<String>();
+		JavaClassParser javaParseInstance = new JavaClassParser();
+		methods = javaParseInstance.methodStatementParser(fileData);
+		if(methods.size() > 0){
 
-		JavaClassParser methodParser = new JavaClassParser();
-		int initialIdentifier = 1;
-		int initialNodeNumbering = 1;
-		int previousNodeIdentifier = 1;
-		for(int methodCounter = 0;methodCounter < methods.size(); methodCounter++){
-			MethodTree currentMethodTree = new MethodTree();
-			//WE ARE CHEATING HERE, ASTPARSER NEEDS THE CLASS 
-			//INICIALIZATION TO PARSER ANYTHING INSIDE THE METHODS(I KNOW IT'S WEIRD)
-			String methodToParse = "public class thisClass{ \n" + methods.get(methodCounter) + "\n }";
-			LinkedList<String> currentMethodStatements = methodParser.ifStatementParser(methodToParse);
-			currentMethodTree.setIfStatements(currentMethodStatements);
-			currentMethodStatements = methodParser.forStatementParser(methodToParse);
-			currentMethodTree.setForStatements(currentMethodStatements);
-			currentMethodStatements = methodParser.whileStatementParser(methodToParse);
-			currentMethodTree.setWhileStatements(currentMethodStatements);
-			currentMethodStatements = methodParser.doWhileStatementParser(methodToParse);
-			currentMethodTree.setDoWhileStatements(currentMethodStatements);
-			currentMethodStatements = methodParser.switchStatementParser(methodToParse);
-			currentMethodTree.setSwitchStatements(currentMethodStatements);
-			currentMethodStatements = methodParser.tryStatementParser(methodToParse);
-			currentMethodTree.setTryStatements(currentMethodStatements);
+			JavaClassParser methodParser = new JavaClassParser();
+			int initialIdentifier = 1;
+			int initialNodeNumbering = 1;
+			int previousNodeIdentifier = 1;
+			for(int methodCounter = 0;methodCounter < methods.size(); methodCounter++){
+				MethodTree currentMethodTree = new MethodTree();
+				//WE ARE CHEATING HERE, ASTPARSER NEEDS THE CLASS 
+				//INICIALIZATION TO PARSER ANYTHING INSIDE THE METHODS(I KNOW IT'S WEIRD)
+				String methodToParse = "public class thisClass{ \n" + methods.get(methodCounter) + "\n }";
+				LinkedList<String> currentMethodStatements = methodParser.ifStatementParser(methodToParse);
+				currentMethodTree.setIfStatements(currentMethodStatements);
+				currentMethodStatements = methodParser.forStatementParser(methodToParse);
+				currentMethodTree.setForStatements(currentMethodStatements);
+				currentMethodStatements = methodParser.whileStatementParser(methodToParse);
+				currentMethodTree.setWhileStatements(currentMethodStatements);
+				currentMethodStatements = methodParser.doWhileStatementParser(methodToParse);
+				currentMethodTree.setDoWhileStatements(currentMethodStatements);
+				currentMethodStatements = methodParser.switchStatementParser(methodToParse);
+				currentMethodTree.setSwitchStatements(currentMethodStatements);
+				currentMethodStatements = methodParser.tryStatementParser(methodToParse);
+				currentMethodTree.setTryStatements(currentMethodStatements);
 
-			this.methodSkipEdges.add(initialIdentifier);
-			initialNodeNumbering = this.methodParseRecursion(methods.get(methodCounter), currentMethodTree,initialIdentifier,initialNodeNumbering,previousNodeIdentifier);
-			previousNodeIdentifier = initialNodeNumbering;
-			initialIdentifier = this.getAllNodes().getLast().getIdentifier();
-			if(this.islastNodeJoin() == true){
-				this.removeLastJoin();
+				this.methodSkipEdges.add(initialIdentifier);
+				initialNodeNumbering = this.methodParseRecursion(methods.get(methodCounter), currentMethodTree,initialIdentifier,initialNodeNumbering,previousNodeIdentifier);
+				previousNodeIdentifier = initialNodeNumbering;
+				initialIdentifier = this.getAllNodes().getLast().getIdentifier();
+				if(this.islastNodeJoin() == true){
+					this.removeLastJoin();
+				}
+				this.setTotalNumberOfNodesAfterEachGraph(this.allNodes.size());
+
 			}
-			this.setTotalNumberOfNodesAfterEachGraph(this.allNodes.size());
+
 
 		}
-		printNodeList(this.getAllNodes());
-		printEdgeList(this.getAllEdges());
-
 	}
 
 	private int methodParseRecursion(String currentSectionOfCode,MethodTree currentMethodTree, int identifier,int nodeNumbering,int previousNodeIdentifier){
@@ -70,6 +74,8 @@ public class NormalCFG extends CFGGraph{
 		LinkedList<String> linesOfCode = new LinkedList<String>();
 		LinkedList<Integer> tryIdentifiers = null;
 		LinkedList<Integer> catchIdentifiers = null;
+		boolean ifFound = false;
+		int lastIfStatementFoundIdentifier = 0;
 
 		CodeBlockFeatures currentBlock = null;
 
@@ -89,6 +95,8 @@ public class NormalCFG extends CFGGraph{
 			//CHECKING IF CURRENT LINE IS AN IF STATEMENT
 			else if(isIfStatement(javaContentData[i]) == true && i != 0){//FOUND AN IF, AND i CURRENT LINE IS NOT THE SAME IF WE'RE WORKING ON
 
+				ifFound = true;
+				lastIfStatementFoundIdentifier = previousNodeIdentifier;
 				currentBlock = new CodeBlockFeatures(currentMethodTree, previousNodeIdentifier, newNode, newEdge, currentNodes, currentEdges, nodeNumbering, i, linesOfCode, javaContentData, identifier);
 				currentBlock = this.runBlockStatement(currentBlock,"if");
 
@@ -178,7 +186,8 @@ public class NormalCFG extends CFGGraph{
 				//DO NOTHING
 			}
 			else if(isIfStatement(javaContentData[i]) == true && i == 0){
-				//DO NOTHING
+				ifFound = true;
+				lastIfStatementFoundIdentifier = previousNodeIdentifier;
 			}
 			else if(isTryStatement(javaContentData[i]) == true && i == 0){
 				tryIdentifiers = new LinkedList<Integer>();
@@ -198,6 +207,19 @@ public class NormalCFG extends CFGGraph{
 					nodeNumbering++;
 					identifier++;//NEW NODE IDENTIFIER
 
+					//THIS SECTION OF CODE WILL ADD AN EDGE IF THE PREVIOUS LINE WAS AN ELSE IF STATEMENT
+					if(i > 0 && javaContentData != null){
+						String previousLineOfCode = javaContentData[i-1].trim();
+						if(isElseIfStatement(previousLineOfCode) == true){
+							int previousLineIdentifier = getIdentifierFromText(currentNodes, previousLineOfCode);
+							newEdge = this.createEdge(previousLineIdentifier,newNode.getIdentifier());
+							currentEdges.add(newEdge);
+							this.setAllEdges(currentEdges);
+
+						}
+
+					}
+
 					if(tryIdentifiers != null && catchIdentifiers == null){
 						tryIdentifiers.add(newNode.getIdentifier());
 					}
@@ -207,9 +229,9 @@ public class NormalCFG extends CFGGraph{
 					if(isElseStatement(javaContentData[i].trim()) == true){
 						if(newNode != null){//DOUBLE MAKING SURE THAT IF THE NODE IS NULL OR NOT
 							//IF THE PREVIOUS NODE IS A 'JOIN', IT'LL CREATE AN EDGE BETWEEN THE CURRENT NODE AND THE 'JOIN'
-							if(this.isJoinBeforeElseFound() == false){//THIS WILL PREVENT FROM CHILD NODES TO CONNECT TO PARENT NODES 
+							if(ifFound == true){//THIS WILL PREVENT FROM CHILD NODES TO CONNECT TO PARENT NODES 
 								//this.createJoinEdge(currentNodes,newNode);//THIS WILL PREVENT FROM CHILD NODES TO CONNECT TO PARENT NODES 		
-								newEdge = this.createEdge(previousNodeIdentifier,identifier);
+								newEdge = this.createEdge(lastIfStatementFoundIdentifier,identifier);
 								currentEdges.add(newEdge);
 							}else{
 								this.setJoinBeforeElseFound(false);
@@ -219,6 +241,30 @@ public class NormalCFG extends CFGGraph{
 
 							this.setAllNodes(currentNodes);
 							this.setAllEdges(currentEdges);
+							//SINCE WE SAVED THE DATA FROM PREVIOUS NODE, NOW WE NEED TO EMPTY THE NODE TO CREATE A NEW ONE
+							newNode = null;
+							linesOfCode = new LinkedList<String>();
+						}
+
+						if(isElseIfStatement(javaContentData[i].trim()) == true){
+							newNode = new Node(nodeNumbering+",",identifier);
+							linesOfCode.add(javaContentData[i].trim());
+							nodeNumbering++;
+							identifier++;//NEW NODE IDENTIFIER
+
+							newNode = this.closeNode(newNode, linesOfCode);
+							currentNodes.add(newNode);
+
+							this.setAllNodes(currentNodes);
+
+							
+							
+							if(ifFound == true){
+								newEdge = this.createEdge(lastIfStatementFoundIdentifier,newNode.getIdentifier());
+								currentEdges.add(newEdge);
+								this.setAllEdges(currentEdges);
+							}
+							
 							//SINCE WE SAVED THE DATA FROM PREVIOUS NODE, NOW WE NEED TO EMPTY THE NODE TO CREATE A NEW ONE
 							newNode = null;
 							linesOfCode = new LinkedList<String>();
@@ -392,16 +438,16 @@ public class NormalCFG extends CFGGraph{
 			identifiersForJoinNode = new LinkedList<Integer>();
 		}
 
-		
+
 
 		if(statement.equals("try")){
-			
+
 			for(int z =(currentNodes.size()-1); z>0; z--){
 				String firstLineOfNode = "";
 				if(isJoinNode(currentNodes, z) == false){
 					firstLineOfNode = currentNodes.get(z).getLinesOfCode().get(0);
 				}
-				
+
 				if(!firstLineOfNode.equals("") && isCatchStatement(firstLineOfNode) == false){
 					identifiersForJoinNode.add(currentNodes.get(z).getIdentifier());
 					break;
@@ -469,6 +515,7 @@ public class NormalCFG extends CFGGraph{
 				currentBlock.setPreviousNodeIdentifier(preJoinNodeProcess(currentBlock.getCurrentNode(), currentBlock.getCurrentNodes(), currentBlock.getCurrentEdge(), currentBlock.getCurrentEdges(), 
 						currentBlock.getNodeNumbering(), currentBlock.getLinesOfCode(), currentBlock.getJavaContentData()[currentBlock.getBlockPointer()].trim(), 
 						currentBlock.getPreviousNodeIdentifier(), currentBlock.getIdentifier()));
+				
 
 				currentBlock.setNodeNumbering(this.methodParseRecursion(allStatements.get(x), currentBlock.getCurrentMethodTree(),currentBlock.getIdentifier(),currentBlock.getNodeNumbering()+1,currentBlock.getPreviousNodeIdentifier()));
 				currentBlock.setBlockPointer(currentBlock.getBlockPointer() + this.getLinesofCodeInsideRecursion());

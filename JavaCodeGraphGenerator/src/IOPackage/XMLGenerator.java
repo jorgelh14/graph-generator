@@ -30,13 +30,13 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 
-public class XMLGenerator implements IOManager{
+public class XMLGenerator extends IOManager{
 	
-	public void CreateExportFile (LinkedList<Node> allNodes, LinkedList <Edge> allEdges){ 
+	public void CreateExportFile (LinkedList<Node> allNodes, LinkedList <Edge> allEdges,String fileName){ 
 
 
 		    try {
-		    	File file = new File("XMLExportFile.xml");
+		    	File file = new File(fileName);
 			    file.createNewFile();	    
 				BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 				writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + "\n<root>\n");
@@ -81,9 +81,4 @@ public class XMLGenerator implements IOManager{
 		    System.out.println(string);
 		}
 
-		
-		public String fileReader(String dirPath) {
-			// TODO Auto-generated method stub
-			return null;
-		}
 	}

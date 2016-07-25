@@ -1,5 +1,10 @@
 package CFGPackage;
 
+import java.awt.Desktop;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.LinkedList;
 
 import GraphElements.Edge;
@@ -143,7 +148,7 @@ public abstract class CFGGraph {
 
 
 
-	public void generateGraph(LinkedList<String> methods){
+	public void generateGraph(String fileData){
 
 	}
 
@@ -200,7 +205,22 @@ public abstract class CFGGraph {
 			return true;
 		if(codeLine.toLowerCase().contains("else ") && codeLine.toLowerCase().contains("if") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
+		if(codeLine.toLowerCase().contains("else ") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
+			return true;
 		if(codeLine.toLowerCase().contains("else ") && !codeLine.toLowerCase().contains("system.out"))
+			return true;
+
+		return false;
+	}
+	
+	protected boolean isElseIfStatement(String codeLine){
+
+		if(codeLine == null)
+			return false;
+
+		if(codeLine.toLowerCase().contains("else ") && codeLine.toLowerCase().contains("if") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
+			return true;
+		if(codeLine.toLowerCase().contains("else ") && codeLine.toLowerCase().contains("if") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
 
 		return false;
@@ -223,6 +243,9 @@ public abstract class CFGGraph {
 			return false;
 
 		if(codeLine.toLowerCase().contains("while") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
+			return true;
+		
+		if(codeLine.toLowerCase().contains("while") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && !codeLine.toLowerCase().contains(";") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
 
 		return false;
@@ -309,36 +332,7 @@ public abstract class CFGGraph {
 		return false;
 	}
 
-	protected void printNodeList(LinkedList<Node> nodes){
-		System.out.println("");
-		System.out.println("PRINTING ALL NODES");
-		System.out.println("");
-		for(int i = 0;i<nodes.size();i++){
-			System.out.println("--------------------------------------");
-			System.out.println("Node: " + nodes.get(i).getThisNodeText());
-			System.out.println("Identifier: " + nodes.get(i).getIdentifier());
-			System.out.println("Codelines: ");
-			for(int x = 0; x< nodes.get(i).getLinesOfCode().size();x++){
-				LinkedList<String> linesOfCode = nodes.get(i).getLinesOfCode();
-				System.out.println("\t"+linesOfCode.get(x));
-
-			}
-		}
-
-	}
-
-	protected void printEdgeList(LinkedList<Edge> edges){
-		System.out.println("");
-		System.out.println("PRINTING ALL EDGES");
-		System.out.println("");
-		for(int i = 0;i<edges.size();i++){
-			System.out.println("--------------------------------------");
-			System.out.println("Edge: ");
-			System.out.println("Identifier Source: " + edges.get(i).getSource());
-			System.out.println("Identifier Target: " + edges.get(i).getTarget());
-		}
-
-	}
+	
 
 	protected Node closeNode(Node thisNode,LinkedList<String> linesOfCode){
 		thisNode.setLinesOfCode(linesOfCode);
@@ -558,5 +552,17 @@ public abstract class CFGGraph {
 		if(allNodes.get(identifier).getThisNodeText().toLowerCase().equals("join"))
 			return true;
 		return false;
+	}
+	
+	protected int getIdentifierFromText(LinkedList<Node> allNodes,String codeLine){
+		
+		for(int i = (allNodes.size()-1); i > 0;i--){
+			LinkedList<String> linesOfCodePerNode = allNodes.get(i).getLinesOfCode();
+			for(int x = 0;linesOfCodePerNode != null && x< linesOfCodePerNode.size();x++){
+				if(codeLine.equals(linesOfCodePerNode.get(x)))
+					return allNodes.get(i).getIdentifier();
+			}
+		}
+		return 0;
 	}
 }
