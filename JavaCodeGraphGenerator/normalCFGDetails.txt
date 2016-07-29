@@ -2,151 +2,203 @@
 PRINTING ALL NODES
 
 --------------------------------------
-Node: 1,2,3,4
+Node: 1,2
 Identifier: 1
+Codelines: 
+	System.out.println("FIRST LINE IN CONSTRUTOR");
+	System.out.println("SECOND LINE IN CONSTRUTOR");
+--------------------------------------
+Node: 3,4,5,6
+Identifier: 2
 Codelines: 
 	String name="David";
 	String lastName="Gonzalez";
 	System.out.println(name + " " + lastName);
 	if (name.equals("David") || name.equals("Daniel")) {
 --------------------------------------
-Node: 5,6,7
-Identifier: 2
+Node: 7,8,9
+Identifier: 3
 Codelines: 
 	System.out.println("HELLO");
 	System.out.println("HOW R U?");
 	if (name.equals("Jorge") || name.equals("Juan")) {
 --------------------------------------
-Node: 8
-Identifier: 3
+Node: 10
+Identifier: 4
 Codelines: 
 	System.out.println("U NO DAVID");
 --------------------------------------
-Node: 9
-Identifier: 4
+Node: 11
+Identifier: 5
 Codelines: 
 	System.out.print("HELLO JORGE");
 --------------------------------------
 Node: Join
-Identifier: 5
+Identifier: 6
 Codelines: 
 --------------------------------------
-Node: 10
-Identifier: 6
+Node: 12
+Identifier: 7
 Codelines: 
 	else if (name.equals("Daniel")) {
 --------------------------------------
-Node: 11
-Identifier: 7
+Node: 13
+Identifier: 8
 Codelines: 
 	System.out.println("U NO DAVID");
 --------------------------------------
-Node: 12
-Identifier: 8
+Node: 14
+Identifier: 9
 Codelines: 
 	System.out.println("ME DON'T KNOW U");
 --------------------------------------
 Node: Join
-Identifier: 9
+Identifier: 10
 Codelines: 
 --------------------------------------
-Node: 13,14,15
-Identifier: 10
+Node: 15,16,17
+Identifier: 11
 Codelines: 
 	System.out.println("OUT OF IF STATEMENT");
 	System.out.println("WE HAPPY");
 	if (lastName.equals("Gonzalez") || lastName.equals("Saenz") || lastName.equals("Ortiz")) {
 --------------------------------------
-Node: 16
-Identifier: 11
+Node: 18
+Identifier: 12
 Codelines: 
 	System.out.println("HELLO");
 --------------------------------------
-Node: 17
-Identifier: 12
+Node: 19
+Identifier: 13
 Codelines: 
 	System.out.println("U NO GONZALEZ");
 --------------------------------------
 Node: Join
-Identifier: 13
+Identifier: 14
 Codelines: 
 --------------------------------------
-Node: 18
-Identifier: 14
+Node: 20
+Identifier: 15
 Codelines: 
 	for (int i=0; i < 10; i++) {
 --------------------------------------
-Node: 19
-Identifier: 15
+Node: 21
+Identifier: 16
 Codelines: 
 	System.out.println(i);
 --------------------------------------
 Node: Join
-Identifier: 16
+Identifier: 17
 Codelines: 
 --------------------------------------
-Node: 20,21,22
-Identifier: 17
+Node: 22,23,24
+Identifier: 18
 Codelines: 
 	System.out.println("HELLO EVERYONE");
 	int z=0;
 	while (z < 10) {
 --------------------------------------
-Node: 23,24
-Identifier: 18
+Node: 25,26
+Identifier: 19
 Codelines: 
 	System.out.println("HELLO # " + z);
 	z++;
 --------------------------------------
 Node: Join
-Identifier: 19
+Identifier: 20
 Codelines: 
 --------------------------------------
-Node: 25
-Identifier: 20
+Node: 27
+Identifier: 21
 Codelines: 
 	int y=0;
 --------------------------------------
-Node: 27,28,29
-Identifier: 21
+Node: 29,30,31
+Identifier: 22
 Codelines: 
 	System.out.println(y);
 	y++;
 	while (y < 10);
 --------------------------------------
-Node: 30
-Identifier: 22
-Codelines: 
-	try {
---------------------------------------
-Node: 31,32,33,34,35,36
+Node: 32,33
 Identifier: 23
+Codelines: 
+	System.out.println("BEFORE LOOP!!");
+	for (int i=0; i < 10; i++) {
+--------------------------------------
+Node: 34
+Identifier: 24
+Codelines: 
+	for (int j=0; j < 20; j++) {
+--------------------------------------
+Node: 35
+Identifier: 25
+Codelines: 
+	System.out.print(j);
+--------------------------------------
+Node: Join
+Identifier: 26
+Codelines: 
+--------------------------------------
+Node: 36
+Identifier: 27
+Codelines: 
+	System.out.printf("\n---------------------------------------------\n");
+--------------------------------------
+Node: Join
+Identifier: 28
+Codelines: 
+--------------------------------------
+Node: 37
+Identifier: 29
+Codelines: 
+	System.out.println("HELLO WORLD!!");
+--------------------------------------
+Node: 39,40,41,42,43,44,45
+Identifier: 30
 Codelines: 
 	System.out.println("1");
 	System.out.println("2");
 	System.out.println("3");
 	System.out.println("4");
 	int i=0;
+	int j=0;
 	switch (i) {
 --------------------------------------
-Node: 37,38,39,40
-Identifier: 24
+Node: 46,47,48,49
+Identifier: 31
 Codelines: 
 	case 0:
 	System.out.println(i);
 	System.out.println(i + 1);
+	switch (j) {
+--------------------------------------
+Node: 50,51,52
+Identifier: 32
+Codelines: 
+	case 0:
+	System.out.println("Hello");
+	return;
+--------------------------------------
+Node: Join
+Identifier: 33
+Codelines: 
+--------------------------------------
+Node: 53
+Identifier: 34
+Codelines: 
 	break;
 --------------------------------------
-Node: 41,42,43,44
-Identifier: 25
+Node: 54,55,56,57
+Identifier: 35
 Codelines: 
 	case 1:
 	System.out.println(i);
 	System.out.println(i + 1);
 	break;
 --------------------------------------
-Node: 45,46,47,48
-Identifier: 26
+Node: 58,59,60,61
+Identifier: 36
 Codelines: 
 	default :
 	System.out.println(i);
@@ -154,37 +206,37 @@ Codelines:
 	break;
 --------------------------------------
 Node: Join
-Identifier: 27
+Identifier: 37
 Codelines: 
 --------------------------------------
-Node: 49
-Identifier: 28
+Node: 62
+Identifier: 38
 Codelines: 
 	System.out.println("WE ARE DONE WITH THE SWITCH!!");
 --------------------------------------
-Node: 50,51,52
-Identifier: 29
+Node: 63,64,65
+Identifier: 39
 Codelines: 
 	catch (Exception e) {
 	System.out.println(e.toString());
 	e.printStackTrace();
 --------------------------------------
 Node: Join
-Identifier: 31
+Identifier: 41
 Codelines: 
 --------------------------------------
 Node: Join
-Identifier: 30
+Identifier: 40
 Codelines: 
 --------------------------------------
-Node: 53,54
-Identifier: 32
+Node: 66,67
+Identifier: 42
 Codelines: 
 	System.out.println("WE ARE AFTER CATCH");
 	for (int o=0; o < 10; o++) {
 --------------------------------------
-Node: 55
-Identifier: 33
+Node: 68
+Identifier: 43
 Codelines: 
 	System.out.println("A NEW FOR LOOP");
 
@@ -192,15 +244,11 @@ PRINTING ALL EDGES
 
 --------------------------------------
 Edge: 
-Identifier Source: 1
-Identifier Target: 2
---------------------------------------
-Edge: 
 Identifier Source: 2
 Identifier Target: 3
 --------------------------------------
 Edge: 
-Identifier Source: 2
+Identifier Source: 3
 Identifier Target: 4
 --------------------------------------
 Edge: 
@@ -209,31 +257,31 @@ Identifier Target: 5
 --------------------------------------
 Edge: 
 Identifier Source: 4
-Identifier Target: 5
---------------------------------------
-Edge: 
-Identifier Source: 1
 Identifier Target: 6
 --------------------------------------
 Edge: 
-Identifier Source: 6
+Identifier Source: 5
+Identifier Target: 6
+--------------------------------------
+Edge: 
+Identifier Source: 2
 Identifier Target: 7
 --------------------------------------
 Edge: 
-Identifier Source: 1
+Identifier Source: 7
 Identifier Target: 8
 --------------------------------------
 Edge: 
-Identifier Source: 5
+Identifier Source: 2
 Identifier Target: 9
 --------------------------------------
 Edge: 
-Identifier Source: 7
-Identifier Target: 9
+Identifier Source: 6
+Identifier Target: 10
 --------------------------------------
 Edge: 
 Identifier Source: 8
-Identifier Target: 9
+Identifier Target: 10
 --------------------------------------
 Edge: 
 Identifier Source: 9
@@ -244,7 +292,7 @@ Identifier Source: 10
 Identifier Target: 11
 --------------------------------------
 Edge: 
-Identifier Source: 10
+Identifier Source: 11
 Identifier Target: 12
 --------------------------------------
 Edge: 
@@ -253,7 +301,7 @@ Identifier Target: 13
 --------------------------------------
 Edge: 
 Identifier Source: 12
-Identifier Target: 13
+Identifier Target: 14
 --------------------------------------
 Edge: 
 Identifier Source: 13
@@ -265,14 +313,14 @@ Identifier Target: 15
 --------------------------------------
 Edge: 
 Identifier Source: 15
-Identifier Target: 14
---------------------------------------
-Edge: 
-Identifier Source: 14
 Identifier Target: 16
 --------------------------------------
 Edge: 
 Identifier Source: 16
+Identifier Target: 15
+--------------------------------------
+Edge: 
+Identifier Source: 15
 Identifier Target: 17
 --------------------------------------
 Edge: 
@@ -281,14 +329,14 @@ Identifier Target: 18
 --------------------------------------
 Edge: 
 Identifier Source: 18
-Identifier Target: 17
---------------------------------------
-Edge: 
-Identifier Source: 17
 Identifier Target: 19
 --------------------------------------
 Edge: 
 Identifier Source: 19
+Identifier Target: 18
+--------------------------------------
+Edge: 
+Identifier Source: 18
 Identifier Target: 20
 --------------------------------------
 Edge: 
@@ -297,31 +345,27 @@ Identifier Target: 21
 --------------------------------------
 Edge: 
 Identifier Source: 21
-Identifier Target: 21
+Identifier Target: 22
 --------------------------------------
 Edge: 
 Identifier Source: 22
-Identifier Target: 23
+Identifier Target: 22
 --------------------------------------
 Edge: 
 Identifier Source: 23
 Identifier Target: 24
 --------------------------------------
 Edge: 
-Identifier Source: 23
+Identifier Source: 24
 Identifier Target: 25
 --------------------------------------
 Edge: 
-Identifier Source: 23
-Identifier Target: 26
+Identifier Source: 25
+Identifier Target: 24
 --------------------------------------
 Edge: 
 Identifier Source: 24
-Identifier Target: 27
---------------------------------------
-Edge: 
-Identifier Source: 25
-Identifier Target: 27
+Identifier Target: 26
 --------------------------------------
 Edge: 
 Identifier Source: 26
@@ -329,42 +373,22 @@ Identifier Target: 27
 --------------------------------------
 Edge: 
 Identifier Source: 27
-Identifier Target: 28
+Identifier Target: 23
 --------------------------------------
 Edge: 
 Identifier Source: 23
-Identifier Target: 31
---------------------------------------
-Edge: 
-Identifier Source: 24
-Identifier Target: 31
---------------------------------------
-Edge: 
-Identifier Source: 25
-Identifier Target: 31
---------------------------------------
-Edge: 
-Identifier Source: 26
-Identifier Target: 31
+Identifier Target: 28
 --------------------------------------
 Edge: 
 Identifier Source: 28
+Identifier Target: 29
+--------------------------------------
+Edge: 
+Identifier Source: 30
 Identifier Target: 31
 --------------------------------------
 Edge: 
 Identifier Source: 31
-Identifier Target: 29
---------------------------------------
-Edge: 
-Identifier Source: 29
-Identifier Target: 30
---------------------------------------
-Edge: 
-Identifier Source: 28
-Identifier Target: 30
---------------------------------------
-Edge: 
-Identifier Source: 30
 Identifier Target: 32
 --------------------------------------
 Edge: 
@@ -372,5 +396,89 @@ Identifier Source: 32
 Identifier Target: 33
 --------------------------------------
 Edge: 
+Identifier Source: 31
+Identifier Target: 33
+--------------------------------------
+Edge: 
+Identifier Source: 30
+Identifier Target: 34
+--------------------------------------
+Edge: 
+Identifier Source: 30
+Identifier Target: 35
+--------------------------------------
+Edge: 
+Identifier Source: 30
+Identifier Target: 36
+--------------------------------------
+Edge: 
 Identifier Source: 33
-Identifier Target: 32
+Identifier Target: 37
+--------------------------------------
+Edge: 
+Identifier Source: 34
+Identifier Target: 37
+--------------------------------------
+Edge: 
+Identifier Source: 35
+Identifier Target: 37
+--------------------------------------
+Edge: 
+Identifier Source: 36
+Identifier Target: 37
+--------------------------------------
+Edge: 
+Identifier Source: 37
+Identifier Target: 38
+--------------------------------------
+Edge: 
+Identifier Source: 30
+Identifier Target: 41
+--------------------------------------
+Edge: 
+Identifier Source: 31
+Identifier Target: 41
+--------------------------------------
+Edge: 
+Identifier Source: 32
+Identifier Target: 41
+--------------------------------------
+Edge: 
+Identifier Source: 34
+Identifier Target: 41
+--------------------------------------
+Edge: 
+Identifier Source: 35
+Identifier Target: 41
+--------------------------------------
+Edge: 
+Identifier Source: 36
+Identifier Target: 41
+--------------------------------------
+Edge: 
+Identifier Source: 38
+Identifier Target: 41
+--------------------------------------
+Edge: 
+Identifier Source: 41
+Identifier Target: 39
+--------------------------------------
+Edge: 
+Identifier Source: 39
+Identifier Target: 40
+--------------------------------------
+Edge: 
+Identifier Source: 38
+Identifier Target: 40
+--------------------------------------
+Edge: 
+Identifier Source: 40
+Identifier Target: 42
+--------------------------------------
+Edge: 
+Identifier Source: 42
+Identifier Target: 43
+--------------------------------------
+Edge: 
+Identifier Source: 43
+Identifier Target: 42

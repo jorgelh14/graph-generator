@@ -64,6 +64,15 @@ public class XMLGenerator extends IOManager{
 					if (sourceText != "" && targetText != ""){
 						writer.write( "\t<links>" + "\n" + "\t\t<source>" + sourceText + "</source>\n" + "\t\t<target>" + targetText + "</target>" + "\n\t</links>\n" );
 					}
+					
+					
+				}
+				
+				LinkedList<Node> nodesWithNoEdge = getNodesWithNoEdges(allNodes, allEdges);
+				
+				for(int x = 0;x< nodesWithNoEdge.size();x++){
+					writer.write( "\t<links>" + "\n" + "\t\t<source>" + nodesWithNoEdge.get(x).getIdentifier() + "</source>\n" + "\t\t<target></target>" + "\n\t</links>\n" );
+					
 				}
 				writer.write("</root>");
 		        writer.close();
@@ -79,6 +88,25 @@ public class XMLGenerator extends IOManager{
 		        domImplementationLS.createLSSerializer();
 		    String string = lsSerializer.writeToString(document);
 		    System.out.println(string);
+		}
+		
+		private LinkedList<Node> getNodesWithNoEdges(LinkedList<Node> allNodes,LinkedList<Edge> allEdges){
+			LinkedList<Node> noEdgesNodes = new LinkedList<Node>();
+			boolean edgeFound = false;
+			for(int i = 0;i<allNodes.size();i++){
+				for(int j = 0; j<allEdges.size();j++){
+					if(allNodes.get(i).getIdentifier() == Integer.parseInt(allEdges.get(j).getSource()))
+						edgeFound = true;
+					if(allNodes.get(i).getIdentifier() == Integer.parseInt(allEdges.get(j).getTarget()))
+						edgeFound = true;
+				}
+				if(edgeFound == false)
+					noEdgesNodes.add(allNodes.get(i));
+				else
+					edgeFound = false;
+			}
+			
+			return noEdgesNodes;
 		}
 
 	}

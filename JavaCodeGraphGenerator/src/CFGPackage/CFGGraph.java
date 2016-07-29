@@ -20,6 +20,17 @@ public abstract class CFGGraph {
 	protected boolean breaksFound;
 	protected LinkedList<Integer> breakIdentifiers;
 	protected LinkedList<Integer> methodSkipEdges;
+	
+	protected final int stackOverFlowLimit = 1000;
+
+
+	/**
+	 * @return the stackOverFlowLimit
+	 */
+	protected int getStackOverFlowLimit() {
+		return stackOverFlowLimit;
+	}
+
 
 
 	/**
@@ -148,7 +159,7 @@ public abstract class CFGGraph {
 
 
 
-	public void generateGraph(String fileData){
+	public void generateGraph(String fileData) throws Exception{
 
 	}
 
@@ -363,7 +374,7 @@ public abstract class CFGGraph {
 	protected boolean islastNodeJoin(){
 		LinkedList<Node> allNodes = this.getAllNodes();
 
-		if(allNodes.get(allNodes.size()-1).getThisNodeText().toLowerCase().equals("join"))
+		if(allNodes.size()>0 && allNodes.get(allNodes.size()-1).getThisNodeText().toLowerCase().equals("join"))
 			return true;
 		return false;
 	}
@@ -422,36 +433,7 @@ public abstract class CFGGraph {
 
 
 
-	/**
-	 * THIS METHOD WILL RETURN A LIST OF NODES TO BE LINKED TO THE NEW CREATED JOIN NODE
-	 * @param identifier INTEGER TO BE SEARCH IN ALLTHE EDGES ALREADY CREATED
-	 * @param allEdges ALL THE EDGES THAT HAVE BEEN CREATED ALREADY
-	 * @return LINKEDLIST CONTAINING ALL THE IDENTIFIERS TO BE LINKED TO THE NEW JOIN NODE
-	 */
-	protected LinkedList<Integer> findNodesToLinkToJoin(int identifier,LinkedList<Edge> allEdges){
-
-		LinkedList<Integer> nodesToBeLinked = new LinkedList<Integer>();
-		LinkedList<Integer> nodesAddedInRecursion = new LinkedList<Integer>();
-
-		boolean sourceFound = false;
-		for(int i = 0;i < allEdges.size();i++){
-			if(Integer.parseInt(allEdges.get(i).getSource()) == identifier){
-				sourceFound = true;
-				nodesAddedInRecursion = findNodesToLinkToJoin(Integer.parseInt(allEdges.get(i).getTarget()), allEdges);
-				for(int j = 0; j< nodesAddedInRecursion.size();j++){
-					if(this.findIntegerInList(nodesToBeLinked,nodesAddedInRecursion.get(j)) == false)
-						nodesToBeLinked.add(nodesAddedInRecursion.get(j));
-				}
-			}
-		}
-		//THIS MEANS THAN IF THE SOURCE IS NOT FOUND, THEN THIS IDENTIFIER HAS TO BE LINKED TO THE NEW JOIN TO BE CREATED
-		if(sourceFound == false){
-			nodesToBeLinked.add(identifier);
-		}
-
-		return nodesToBeLinked;
-
-	}
+	
 
 	protected void createMissingEdges(LinkedList<Node> allNodes,int previousNodeIdentifier,LinkedList<Edge> allEdges){
 

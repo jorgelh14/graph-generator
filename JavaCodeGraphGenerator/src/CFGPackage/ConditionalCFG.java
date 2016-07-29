@@ -7,7 +7,7 @@ import GraphElements.Node;
 
 public class ConditionalCFG extends CFGGraph {
 
-	public void generateGraph(String fileData){
+	public void generateGraph(String fileData) throws Exception{
 
 		CFGGraph normalCFG = new NormalCFG();
 		normalCFG.generateGraph(fileData);

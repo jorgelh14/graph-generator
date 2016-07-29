@@ -3,7 +3,12 @@ import java.io.IOException;
 
 
 public class TestJava {
-
+	
+	public TestJava(){
+		System.out.println("FIRST LINE IN CONSTRUTOR");
+		System.out.println("SECOND LINE IN CONSTRUTOR");
+	}
+	
 	public static void main(String[] args) {
 		String name = "David";
 		String lastName = "Gonzalez";
@@ -53,6 +58,17 @@ public class TestJava {
 
 	}
 
+	public static void displayBoard(){
+		System.out.println("BEFORE LOOP!!");
+		for(int i=0;i<10;i++){
+			for(int j=0;j<20;j++){
+ 				System.out.print(j);
+			}
+			System.out.printf("\n---------------------------------------------\n");
+		}
+		
+		System.out.println("HELLO WORLD!!");
+	}
 	public void printStrings(){
 
 		try{
@@ -63,11 +79,17 @@ public class TestJava {
 			System.out.println("4");
 
 			int i = 0;
+			int j = 0;
 
 			switch(i){
 			case 0: 
 				System.out.println(i);
 				System.out.println(i+1);
+				switch(j){
+				case 0:
+					System.out.println("Hello");
+					return;
+				}
 				break;
 			case 1: System.out.println(i);
 			System.out.println(i+1);

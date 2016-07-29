@@ -8,6 +8,8 @@ import GraphElements.*;
 import JavaParserPackage.JavaClassParser;
 
 public class NormalCFG extends CFGGraph{
+	
+	
 
 
 	public NormalCFG(){
@@ -23,7 +25,7 @@ public class NormalCFG extends CFGGraph{
 
 
 
-	public void generateGraph(String fileData) {
+	public void generateGraph(String fileData) throws Exception{
 		LinkedList<String> methods = new LinkedList<String>();
 		JavaClassParser javaParseInstance = new JavaClassParser();
 		methods = javaParseInstance.methodStatementParser(fileData);
@@ -54,10 +56,10 @@ public class NormalCFG extends CFGGraph{
 				this.methodSkipEdges.add(initialIdentifier);
 				initialNodeNumbering = this.methodParseRecursion(methods.get(methodCounter), currentMethodTree,initialIdentifier,initialNodeNumbering,previousNodeIdentifier);
 				previousNodeIdentifier = initialNodeNumbering;
-				initialIdentifier = this.getAllNodes().getLast().getIdentifier();
 				if(this.islastNodeJoin() == true){
 					this.removeLastJoin();
 				}
+				initialIdentifier = this.getAllNodes().getLast().getIdentifier() + 1;
 				this.setTotalNumberOfNodesAfterEachGraph(this.allNodes.size());
 
 			}
@@ -66,7 +68,7 @@ public class NormalCFG extends CFGGraph{
 		}
 	}
 
-	private int methodParseRecursion(String currentSectionOfCode,MethodTree currentMethodTree, int identifier,int nodeNumbering,int previousNodeIdentifier){
+	private int methodParseRecursion(String currentSectionOfCode,MethodTree currentMethodTree, int identifier,int nodeNumbering,int previousNodeIdentifier) throws Exception{
 		LinkedList<Node> currentNodes = this.getAllNodes();
 		LinkedList<Edge> currentEdges = this.getAllEdges();
 		Node newNode = null;
@@ -89,6 +91,7 @@ public class NormalCFG extends CFGGraph{
 			identifier++;
 		}
 		for(int i = 0; i < javaContentData.length;i++){
+			//System.out.println(javaContentData[i]);
 			if(isMethodCall(javaContentData[i]) == true){
 				//DO NOTHING
 			}
@@ -382,14 +385,14 @@ public class NormalCFG extends CFGGraph{
 
 		if(newNode != null){
 			//WE WANT TO PREVENT ADDING THE DO WHILE STATEMENT TO TE NODE
-			if(isDoWhileStatement(lineOfCode) == false){
+			if(isDoWhileStatement(lineOfCode) == false && isTryStatement(lineOfCode) == false){
 				//ADDING IFSTATEMENT TO LAST NODE, BEFORE CREATING A NEW NODE
 				newNode.setThisNodeText(newNode.getThisNodeText() + nodeNumbering + ",");
 				linesOfCode.add(lineOfCode);
 			}
 		}else{
 			//WE WANT TO PREVENT ADDING THE DO WHILE STATEMENT TO TE NODE
-			if(isDoWhileStatement(lineOfCode) == false){
+			if(isDoWhileStatement(lineOfCode) == false && isTryStatement(lineOfCode) == false){
 				newNode = new Node(nodeNumbering+",",identifier);
 				linesOfCode.add(lineOfCode);
 				nodeNumbering++;
@@ -414,7 +417,7 @@ public class NormalCFG extends CFGGraph{
 		return previousNodeIdentifier;
 	}
 
-	private int postJoinNodeProcess(int previousNodeIdentifier, String statement){
+	private int postJoinNodeProcess(int previousNodeIdentifier, String statement) throws Exception{
 
 		LinkedList<Node> currentNodes;
 		LinkedList<Edge> currentEdges;
@@ -428,12 +431,14 @@ public class NormalCFG extends CFGGraph{
 
 
 		LinkedList<Integer> identifiersForJoinNode = null;
+		
+		int recursionCounter = 0;
 
 		//WE WANT TO CREATE A JOIN FROM THE PARENT NODE IF THE CURRENT STATEMENT IS A FOR OR A WHILE LOOP
 		if(!statement.equals("for") && !statement.equals("while")){
-			identifiersForJoinNode = this.findNodesToLinkToJoin(previousNodeIdentifier,currentEdges);
+			identifiersForJoinNode = this.findNodesToLinkToJoin(previousNodeIdentifier,currentEdges,recursionCounter,new LinkedList<Edge>() );
 		}else{
-			identifiersForJoinNode = this.findNodesToLinkToJoin(previousNodeIdentifier,currentEdges);
+			identifiersForJoinNode = this.findNodesToLinkToJoin(previousNodeIdentifier,currentEdges,recursionCounter,new LinkedList<Edge>());
 			biggestIdentifier = identifiersForJoinNode.getLast();
 			identifiersForJoinNode = new LinkedList<Integer>();
 		}
@@ -488,7 +493,7 @@ public class NormalCFG extends CFGGraph{
 	}
 
 
-	private CodeBlockFeatures runBlockStatement(CodeBlockFeatures currentBlock, String statement){
+	private CodeBlockFeatures runBlockStatement(CodeBlockFeatures currentBlock, String statement) throws Exception{
 
 
 		LinkedList<String> allStatements = null;
@@ -547,6 +552,50 @@ public class NormalCFG extends CFGGraph{
 		return currentBlock;
 
 
+	}
+	/**
+	 * THIS METHOD WILL RETURN A LIST OF NODES TO BE LINKED TO THE NEW CREATED JOIN NODE
+	 * @param identifier INTEGER TO BE SEARCH IN ALLTHE EDGES ALREADY CREATED
+	 * @param allEdges ALL THE EDGES THAT HAVE BEEN CREATED ALREADY
+	 * @return LINKEDLIST CONTAINING ALL THE IDENTIFIERS TO BE LINKED TO THE NEW JOIN NODE
+	 */
+	private LinkedList<Integer> findNodesToLinkToJoin(int identifier,LinkedList<Edge> allEdges, int recursionCounter, LinkedList<Edge> previousTraverserEdges) throws Exception{
+		LinkedList<Integer> nodesToBeLinked = new LinkedList<Integer>();
+		LinkedList<Integer> nodesAddedInRecursion = new LinkedList<Integer>();
+
+		if(recursionCounter == this.getStackOverFlowLimit())
+			throw new Exception("WTF");
+		else
+			recursionCounter++;
+		
+		boolean sourceFound = false;
+		for(int i = 0;i < allEdges.size();i++){
+			if(Integer.parseInt(allEdges.get(i).getSource()) == identifier && isEdgeAlreadyVisited(previousTraverserEdges,allEdges.get(i).getSource(),allEdges.get(i).getTarget()) == false){
+				sourceFound = true;
+				previousTraverserEdges.add(allEdges.get(i));
+				nodesAddedInRecursion = findNodesToLinkToJoin(Integer.parseInt(allEdges.get(i).getTarget()), allEdges,recursionCounter,previousTraverserEdges);
+				for(int j = 0; j< nodesAddedInRecursion.size();j++){
+					if(this.findIntegerInList(nodesToBeLinked,nodesAddedInRecursion.get(j)) == false)
+						nodesToBeLinked.add(nodesAddedInRecursion.get(j));
+				}
+			}
+		}
+		//THIS MEANS THAN IF THE SOURCE IS NOT FOUND, THEN THIS IDENTIFIER HAS TO BE LINKED TO THE NEW JOIN TO BE CREATED
+		if(sourceFound == false){
+			nodesToBeLinked.add(identifier);
+		}
+
+		return nodesToBeLinked;
+
+	}
+	
+	private boolean isEdgeAlreadyVisited(LinkedList<Edge> previousTraverserEdges,String source, String target){
+		
+		for(int i = 0;previousTraverserEdges != null && i <previousTraverserEdges.size();i++){
+			if(source.equals(previousTraverserEdges.get(i).getSource()) && target.equals(previousTraverserEdges.get(i).getTarget()))
+				return true;
+		}
+		return false;
 	}
 
 

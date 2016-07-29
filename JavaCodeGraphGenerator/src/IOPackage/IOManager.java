@@ -30,5 +30,9 @@ public abstract class IOManager {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public String findJavaFile(){
+		return null;
+	}
 
 }
