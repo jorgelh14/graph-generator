@@ -8,8 +8,9 @@ import GraphElements.*;
 import JavaParserPackage.JavaClassParser;
 
 public class NormalCFG extends CFGGraph{
-	
-	
+
+
+
 
 
 	public NormalCFG(){
@@ -25,8 +26,12 @@ public class NormalCFG extends CFGGraph{
 
 
 
+
+
+
+
 	public void generateGraph(String fileData) throws Exception{
-		LinkedList<String> methods = new LinkedList<String>();
+		LinkedList<Statement> methods = new LinkedList<Statement>();
 		JavaClassParser javaParseInstance = new JavaClassParser();
 		methods = javaParseInstance.methodStatementParser(fileData);
 		if(methods.size() > 0){
@@ -39,23 +44,12 @@ public class NormalCFG extends CFGGraph{
 				MethodTree currentMethodTree = new MethodTree();
 				//WE ARE CHEATING HERE, ASTPARSER NEEDS THE CLASS 
 				//INICIALIZATION TO PARSER ANYTHING INSIDE THE METHODS(I KNOW IT'S WEIRD)
-				String methodToParse = "public class thisClass{ \n" + methods.get(methodCounter) + "\n }";
-				LinkedList<String> currentMethodStatements = methodParser.ifStatementParser(methodToParse);
-				currentMethodTree.setIfStatements(currentMethodStatements);
-				currentMethodStatements = methodParser.forStatementParser(methodToParse);
-				currentMethodTree.setForStatements(currentMethodStatements);
-				currentMethodStatements = methodParser.whileStatementParser(methodToParse);
-				currentMethodTree.setWhileStatements(currentMethodStatements);
-				currentMethodStatements = methodParser.doWhileStatementParser(methodToParse);
-				currentMethodTree.setDoWhileStatements(currentMethodStatements);
-				currentMethodStatements = methodParser.switchStatementParser(methodToParse);
-				currentMethodTree.setSwitchStatements(currentMethodStatements);
-				currentMethodStatements = methodParser.tryStatementParser(methodToParse);
-				currentMethodTree.setTryStatements(currentMethodStatements);
+				String methodToParse = "public class thisClass{ \n" + methods.get(methodCounter).getBlockStatement() + "\n }";
+				currentMethodTree = getAllStamentsInsideMethod(methodParser, methodToParse);
 
 				this.methodSkipEdges.add(initialIdentifier);
-				initialNodeNumbering = this.methodParseRecursion(methods.get(methodCounter), currentMethodTree,initialIdentifier,initialNodeNumbering,previousNodeIdentifier);
-				previousNodeIdentifier = initialNodeNumbering;
+				initialNodeNumbering = this.methodParseRecursion(methods.get(methodCounter).getBlockStatement(), currentMethodTree,initialIdentifier,initialNodeNumbering,previousNodeIdentifier);
+				previousNodeIdentifier = this.getAllNodes().getLast().getIdentifier()+1;
 				if(this.islastNodeJoin() == true){
 					this.removeLastJoin();
 				}
@@ -91,45 +85,32 @@ public class NormalCFG extends CFGGraph{
 			identifier++;
 		}
 		for(int i = 0; i < javaContentData.length;i++){
-			//System.out.println(javaContentData[i]);
-			if(isMethodCall(javaContentData[i]) == true){
-				//DO NOTHING
-			}
-			//CHECKING IF CURRENT LINE IS AN IF STATEMENT
-			else if(isIfStatement(javaContentData[i]) == true && i != 0){//FOUND AN IF, AND i CURRENT LINE IS NOT THE SAME IF WE'RE WORKING ON
+			System.out.println(javaContentData[i]);
+			if(isSkipLine(javaContentData[i],i) == true){
 
-				ifFound = true;
-				lastIfStatementFoundIdentifier = previousNodeIdentifier;
+				//EVEN THAT WE DO NOTHING FOR MOST OF THE STAMENTS, WE NEED TO DO THESE EXCEPTIONS IF THE LINE IS ONE OF THE FOLLOWING
+				String statement = getBlockStatementType(javaContentData[i]);
+
+				if(statement != null && statement.equals("if")){
+					ifFound = true;
+					lastIfStatementFoundIdentifier = previousNodeIdentifier;
+				}
+				if(statement != null && statement.equals("try")){
+					tryIdentifiers = new LinkedList<Integer>();
+				}
+			}
+			else if(isBlockStatement(javaContentData[i], i) == true){
+				String statement = getBlockStatementType(javaContentData[i]);
+				if(statement != null && statement.equals("if")){
+					ifFound = true;
+					lastIfStatementFoundIdentifier = previousNodeIdentifier;
+				}
 				currentBlock = new CodeBlockFeatures(currentMethodTree, previousNodeIdentifier, newNode, newEdge, currentNodes, currentEdges, nodeNumbering, i, linesOfCode, javaContentData, identifier);
-				currentBlock = this.runBlockStatement(currentBlock,"if");
+				currentBlock = this.runBlockStatement(currentBlock,statement);
+
 
 			}
-			//CHECKING IF CURRENT LINE IS A FOR STATEMENT
-			else if(isForStatement(javaContentData[i]) == true && i != 0){
 
-				currentBlock = new CodeBlockFeatures(currentMethodTree, previousNodeIdentifier, newNode, newEdge, currentNodes, currentEdges, nodeNumbering, i, linesOfCode, javaContentData, identifier);
-				currentBlock = this.runBlockStatement(currentBlock,"for");
-			}
-			//CHECKING IF CURRENT LINE IS A WHILE STATEMENT
-			else if(isWhileStatement(javaContentData[i]) == true && i != 0){
-				currentBlock = new CodeBlockFeatures(currentMethodTree, previousNodeIdentifier, newNode, newEdge, currentNodes, currentEdges, nodeNumbering, i, linesOfCode, javaContentData, identifier);
-				currentBlock = this.runBlockStatement(currentBlock,"while");
-			}
-			//CHECKING IF CURRENT LINE IS A DO WHILE STATEMENT
-			else if(isDoWhileStatement(javaContentData[i]) == true && i != 0){
-				currentBlock = new CodeBlockFeatures(currentMethodTree, previousNodeIdentifier, newNode, newEdge, currentNodes, currentEdges, nodeNumbering, i, linesOfCode, javaContentData, identifier);
-				currentBlock = this.runBlockStatement(currentBlock,"do");
-			}
-			//CHECKING IF CURRENT LINE IS A SWITCH STATEMENT
-			else if(isSwitchStatement(javaContentData[i]) == true && i != 0){
-				currentBlock = new CodeBlockFeatures(currentMethodTree, previousNodeIdentifier, newNode, newEdge, currentNodes, currentEdges, nodeNumbering, i, linesOfCode, javaContentData, identifier);
-				currentBlock = this.runBlockStatement(currentBlock,"switch");
-			}
-			//CHECKING IF CURRENT LINE IS A SWITCH STATEMENT
-			else if(isTryStatement(javaContentData[i]) == true && i != 0){
-				currentBlock = new CodeBlockFeatures(currentMethodTree, previousNodeIdentifier, newNode, newEdge, currentNodes, currentEdges, nodeNumbering, i, linesOfCode, javaContentData, identifier);
-				currentBlock = this.runBlockStatement(currentBlock,"try");
-			}
 
 			else if(isSwitchCaseFound(javaContentData[i]) == true || isSwitchDefaultFound(javaContentData[i]) == true){
 
@@ -143,7 +124,7 @@ public class NormalCFG extends CFGGraph{
 					linesOfCode = new LinkedList<String>();
 				}
 				//TIME TO CREATE A NEW NODE
-				newNode = new Node(nodeNumbering+",",identifier);
+				newNode = this.createNode(nodeNumbering,identifier);
 				linesOfCode.add(javaContentData[i].trim());
 				nodeNumbering++;
 				identifier++;//NEW NODE IDENTIFIER
@@ -167,7 +148,7 @@ public class NormalCFG extends CFGGraph{
 					newNode = null;
 					linesOfCode = new LinkedList<String>();
 
-					newNode = new Node(nodeNumbering+",",identifier);
+					newNode = this.createNode(nodeNumbering,identifier);
 					linesOfCode.add(javaContentData[i].trim());
 					nodeNumbering++;
 					identifier++;//NEW NODE IDENTIFIER
@@ -176,36 +157,11 @@ public class NormalCFG extends CFGGraph{
 					catchIdentifiers.add(newNode.getIdentifier());
 				}
 			}
-			else if(isSwitchStatement(javaContentData[i]) == true && i == 0){
-				//DO NOTHING
-			}
-			else if(isDoWhileStatement(javaContentData[i]) == true && i == 0){
-				//DO NOTHING
-			}
-			else if(isForStatement(javaContentData[i]) == true && i == 0){
-				//DO NOTHING
-			}
-			else if(isWhileStatement(javaContentData[i]) == true && i == 0){
-				//DO NOTHING
-			}
-			else if(isIfStatement(javaContentData[i]) == true && i == 0){
-				ifFound = true;
-				lastIfStatementFoundIdentifier = previousNodeIdentifier;
-			}
-			else if(isTryStatement(javaContentData[i]) == true && i == 0){
-				tryIdentifiers = new LinkedList<Integer>();
 
-			}
-			else  if(javaContentData[i].trim().equals("{") || javaContentData[i].trim().equals("}")){
-				//DO NOTHING
-			}
-			else if(javaContentData[i].trim().substring(0, 2).equals("//")){//THIS MEANS THIS IS A COMMENT LINE, WE NEED TO SKIP THESE
-				//DO NOTHING
-			}
 			else{
 				//IF newNode IS NULL, THIS MEANS WE NEED TO CREATE A NEW NODE
 				if(newNode == null && isElseStatement(javaContentData[i].trim()) == false){
-					newNode = new Node(nodeNumbering+",",identifier);
+					newNode = this.createNode(nodeNumbering,identifier);
 					linesOfCode.add(javaContentData[i].trim());
 					nodeNumbering++;
 					identifier++;//NEW NODE IDENTIFIER
@@ -250,7 +206,7 @@ public class NormalCFG extends CFGGraph{
 						}
 
 						if(isElseIfStatement(javaContentData[i].trim()) == true){
-							newNode = new Node(nodeNumbering+",",identifier);
+							newNode = this.createNode(nodeNumbering,identifier);
 							linesOfCode.add(javaContentData[i].trim());
 							nodeNumbering++;
 							identifier++;//NEW NODE IDENTIFIER
@@ -260,14 +216,14 @@ public class NormalCFG extends CFGGraph{
 
 							this.setAllNodes(currentNodes);
 
-							
-							
+
+
 							if(ifFound == true){
 								newEdge = this.createEdge(lastIfStatementFoundIdentifier,newNode.getIdentifier());
 								currentEdges.add(newEdge);
 								this.setAllEdges(currentEdges);
 							}
-							
+
 							//SINCE WE SAVED THE DATA FROM PREVIOUS NODE, NOW WE NEED TO EMPTY THE NODE TO CREATE A NEW ONE
 							newNode = null;
 							linesOfCode = new LinkedList<String>();
@@ -288,11 +244,15 @@ public class NormalCFG extends CFGGraph{
 			if(isBreakFound(javaContentData[i]) == true){
 				this.setBreaksFound(true);
 				LinkedList<Integer> currentBreaksFound = this.getBreakIdentifiers();
+				if(currentBreaksFound == null)
+					currentBreaksFound = new LinkedList<Integer>();
 				currentBreaksFound.add(newNode.getIdentifier());
 				this.setBreakIdentifiers(currentBreaksFound);
 			}
 
 			if(currentBlock != null){
+
+				currentMethodTree = currentBlock.getCurrentMethodTree();
 
 				//CLOSE PREVIOUS NODE BEFORE WORKING ON IFSTATEMENTS
 				previousNodeIdentifier = currentBlock.getPreviousNodeIdentifier();
@@ -319,15 +279,16 @@ public class NormalCFG extends CFGGraph{
 				linesOfCode = new LinkedList<String>();
 
 
-				if(tryIdentifiers != null){
+				if(tryIdentifiers != null && tryIdentifiers.size() > 0 && catchIdentifiers == null){
+
+
+					int identifierDifference = currentNodes.getLast().getIdentifier() - currentNodes.size();
+
 					//TIME TO ADD INNER NODES TO THE 
-					for(int z = previousNodeIdentifier;z < currentNodes.getLast().getIdentifier();z++){
+					for(int z = (previousNodeIdentifier - identifierDifference);z < (currentNodes.getLast().getIdentifier() - identifierDifference);z++){
 						if(!currentNodes.get(z).getThisNodeText().toLowerCase().equals("join"))
 							tryIdentifiers.add(currentNodes.get(z).getIdentifier());
 					}
-
-
-
 
 				}
 
@@ -358,12 +319,12 @@ public class NormalCFG extends CFGGraph{
 			this.setAllNodes(currentNodes);
 		}
 		//THIS SHOULD CREATE THE 'TRY' JOIN THAT WILL CONNECT TO ALL THE NODES INSIDE THE TRY
-		if(tryIdentifiers != null){
-			identifier = this.createJoinNode(tryIdentifiers, identifier);
+		if(tryIdentifiers != null && catchIdentifiers != null ){
+			int tryJoinNode = this.createJoinNode(tryIdentifiers, identifier);
 			currentEdges = this.getAllEdges();
 
-			for(int x = 0; catchIdentifiers != null && x < catchIdentifiers.size(); x++){
-				newEdge = this.createEdge(currentNodes.getLast().getIdentifier(),catchIdentifiers.get(x) );
+			for(int x = 0;x < catchIdentifiers.size(); x++){
+				newEdge = this.createEdge( tryJoinNode ,catchIdentifiers.get(x) );
 				currentEdges.add(newEdge);
 				this.setAllEdges(currentEdges);
 			}
@@ -393,7 +354,7 @@ public class NormalCFG extends CFGGraph{
 		}else{
 			//WE WANT TO PREVENT ADDING THE DO WHILE STATEMENT TO TE NODE
 			if(isDoWhileStatement(lineOfCode) == false && isTryStatement(lineOfCode) == false){
-				newNode = new Node(nodeNumbering+",",identifier);
+				newNode = this.createNode(nodeNumbering,identifier);
 				linesOfCode.add(lineOfCode);
 				nodeNumbering++;
 				identifier++;//NEW NODE IDENTIFIER
@@ -431,7 +392,7 @@ public class NormalCFG extends CFGGraph{
 
 
 		LinkedList<Integer> identifiersForJoinNode = null;
-		
+
 		int recursionCounter = 0;
 
 		//WE WANT TO CREATE A JOIN FROM THE PARENT NODE IF THE CURRENT STATEMENT IS A FOR OR A WHILE LOOP
@@ -439,7 +400,10 @@ public class NormalCFG extends CFGGraph{
 			identifiersForJoinNode = this.findNodesToLinkToJoin(previousNodeIdentifier,currentEdges,recursionCounter,new LinkedList<Edge>() );
 		}else{
 			identifiersForJoinNode = this.findNodesToLinkToJoin(previousNodeIdentifier,currentEdges,recursionCounter,new LinkedList<Edge>());
-			biggestIdentifier = identifiersForJoinNode.getLast();
+			if(identifiersForJoinNode != null && identifiersForJoinNode.size()>0)
+				biggestIdentifier = identifiersForJoinNode.getLast();
+			else
+				biggestIdentifier = 0;
 			identifiersForJoinNode = new LinkedList<Integer>();
 		}
 
@@ -449,7 +413,7 @@ public class NormalCFG extends CFGGraph{
 
 			for(int z =(currentNodes.size()-1); z>0; z--){
 				String firstLineOfNode = "";
-				if(isJoinNode(currentNodes, z) == false){
+				if(isJoinNode(currentNodes,currentNodes.get(z).getIdentifier()) == false){
 					firstLineOfNode = currentNodes.get(z).getLinesOfCode().get(0);
 				}
 
@@ -487,6 +451,10 @@ public class NormalCFG extends CFGGraph{
 		//AFTER WE CREATE THE JOIN, THE METHOD RETURN THE NEXT IDENTIFIER AFTER RECURSION
 		identifier = createJoinNode(identifiersForJoinNode,biggestIdentifier);
 
+		if(doesNodeExist(identifier, currentNodes) == true){
+			identifier = this.getHighestIdentifier(identifier, currentNodes);
+		}
+
 		return identifier;
 
 
@@ -496,33 +464,24 @@ public class NormalCFG extends CFGGraph{
 	private CodeBlockFeatures runBlockStatement(CodeBlockFeatures currentBlock, String statement) throws Exception{
 
 
-		LinkedList<String> allStatements = null;
-
-		if(statement.equals("for"))
-			allStatements = currentBlock.getCurrentMethodTree().getForStatements();
-		else if(statement.equals("while"))
-			allStatements = currentBlock.getCurrentMethodTree().getWhileStatements();
-		else if(statement.equals("if"))
-			allStatements = currentBlock.getCurrentMethodTree().getIfStatements();
-		else if(statement.equals("do"))
-			allStatements = currentBlock.getCurrentMethodTree().getDoWhileStatements();
-		else if(statement.equals("switch"))
-			allStatements = currentBlock.getCurrentMethodTree().getSwitchStatements();
-		else if(statement.equals("try"))
-			allStatements = currentBlock.getCurrentMethodTree().getTryStatements();
+		LinkedList<Statement> allStatements = getTypeStatements(statement, currentBlock);
 
 		for(int x = 0; allStatements != null && x < allStatements.size();x++){
 			//WE NEED TO COMPARE THE FIRST LINE OF EACH STORED IF INSIDE THE CURRENT METHOD TO GO DEEP INSIDE THE TREE
-			String [] currentStatement = allStatements.get(x).split("\n");
-			if(currentStatement[0].contains(currentBlock.getJavaContentData()[currentBlock.getBlockPointer()].trim())){
+			String [] currentStatement = allStatements.get(x).getBlockStatement().split("\n");
+			if(allStatements.get(x).isTraversed() == false && currentStatement[0].contains(currentBlock.getJavaContentData()[currentBlock.getBlockPointer()].trim())){
+
+				allStatements.get(x).setTraversed(true);
+
+				currentBlock.setCurrentMethodTree(updateMethodTree(statement, currentBlock, allStatements));
 
 				//CLOSE PREVIOUS NODE BEFORE WORKING ON IFSTATEMENTS
 				currentBlock.setPreviousNodeIdentifier(preJoinNodeProcess(currentBlock.getCurrentNode(), currentBlock.getCurrentNodes(), currentBlock.getCurrentEdge(), currentBlock.getCurrentEdges(), 
 						currentBlock.getNodeNumbering(), currentBlock.getLinesOfCode(), currentBlock.getJavaContentData()[currentBlock.getBlockPointer()].trim(), 
 						currentBlock.getPreviousNodeIdentifier(), currentBlock.getIdentifier()));
-				
 
-				currentBlock.setNodeNumbering(this.methodParseRecursion(allStatements.get(x), currentBlock.getCurrentMethodTree(),currentBlock.getIdentifier(),currentBlock.getNodeNumbering()+1,currentBlock.getPreviousNodeIdentifier()));
+
+				currentBlock.setNodeNumbering(this.methodParseRecursion(allStatements.get(x).getBlockStatement(), currentBlock.getCurrentMethodTree(),currentBlock.getIdentifier(),currentBlock.getNodeNumbering()+1,currentBlock.getPreviousNodeIdentifier()));
 				currentBlock.setBlockPointer(currentBlock.getBlockPointer() + this.getLinesofCodeInsideRecursion());
 				this.setLinesofCodeInsideRecursion(currentBlock.getJavaContentData().length);
 
@@ -545,6 +504,7 @@ public class NormalCFG extends CFGGraph{
 				currentBlock.setLinesOfCode(new LinkedList<String>());
 
 				currentBlock.setBlockPointer(currentBlock.getBlockPointer()-1);
+
 				break;
 			}
 		}
@@ -567,7 +527,7 @@ public class NormalCFG extends CFGGraph{
 			throw new Exception("WTF");
 		else
 			recursionCounter++;
-		
+
 		boolean sourceFound = false;
 		for(int i = 0;i < allEdges.size();i++){
 			if(Integer.parseInt(allEdges.get(i).getSource()) == identifier && isEdgeAlreadyVisited(previousTraverserEdges,allEdges.get(i).getSource(),allEdges.get(i).getTarget()) == false){
@@ -581,21 +541,374 @@ public class NormalCFG extends CFGGraph{
 			}
 		}
 		//THIS MEANS THAN IF THE SOURCE IS NOT FOUND, THEN THIS IDENTIFIER HAS TO BE LINKED TO THE NEW JOIN TO BE CREATED
-		if(sourceFound == false){
+		if(sourceFound == false && doesNodeExist(identifier, this.getAllNodes()) == true){
 			nodesToBeLinked.add(identifier);
 		}
 
 		return nodesToBeLinked;
 
 	}
-	
+
 	private boolean isEdgeAlreadyVisited(LinkedList<Edge> previousTraverserEdges,String source, String target){
-		
+
 		for(int i = 0;previousTraverserEdges != null && i <previousTraverserEdges.size();i++){
 			if(source.equals(previousTraverserEdges.get(i).getSource()) && target.equals(previousTraverserEdges.get(i).getTarget()))
 				return true;
 		}
 		return false;
+	}
+
+	private boolean isBlockStatement(String codeLine, int pointer){
+		//CHECKING IF CURRENT LINE IS AN IF STATEMENT
+		if(isIfStatement(codeLine.trim()) == true && pointer != 0){//FOUND AN IF, AND i CURRENT LINE IS NOT THE SAME IF WE'RE WORKING ON
+			return true;
+		}
+		//CHECKING IF CURRENT LINE IS A FOR STATEMENT
+		if(isForStatement(codeLine.trim()) == true && pointer != 0){
+			return true;
+		}
+		//CHECKING IF CURRENT LINE IS A WHILE STATEMENT
+		if(isWhileStatement(codeLine.trim()) == true && pointer != 0){
+			return true;
+		}
+		//CHECKING IF CURRENT LINE IS A DO WHILE STATEMENT
+		if(isDoWhileStatement(codeLine.trim()) == true && pointer != 0){
+			return true;
+		}
+		//CHECKING IF CURRENT LINE IS A SWITCH STATEMENT
+		if(isSwitchStatement(codeLine.trim()) == true && pointer != 0){
+			return true;
+		}
+		//CHECKING IF CURRENT LINE IS A SWITCH STATEMENT
+		if(isTryStatement(codeLine) == true && pointer != 0){
+			return true;
+		}
+		return false;
+	}
+
+	private String getBlockStatementType(String codeLine){
+		//CHECKING IF CURRENT LINE IS AN IF STATEMENT
+		if(isIfStatement(codeLine.trim()) == true ){
+			return "if";
+		}
+		//CHECKING IF CURRENT LINE IS A FOR STATEMENT
+		if(isForStatement(codeLine.trim()) == true ){
+			return "for";
+		}
+		//CHECKING IF CURRENT LINE IS A WHILE STATEMENT
+		if(isWhileStatement(codeLine.trim()) == true ){
+			return "while";
+		}
+		//CHECKING IF CURRENT LINE IS A DO WHILE STATEMENT
+		if(isDoWhileStatement(codeLine.trim()) == true){
+			return "do";
+		}
+		//CHECKING IF CURRENT LINE IS A SWITCH STATEMENT
+		if(isSwitchStatement(codeLine.trim()) == true){
+			return "switch";
+		}
+		//CHECKING IF CURRENT LINE IS A SWITCH STATEMENT
+		if(isTryStatement(codeLine) == true ){
+			return "try";
+		}
+		return null;
+	}
+
+	private MethodTree getAllStamentsInsideMethod(JavaClassParser methodParser, String methodToParse){
+
+		MethodTree currentMethodTree = new MethodTree();
+		LinkedList<Statement> currentMethodStatements = methodParser.ifStatementParser(methodToParse);
+		currentMethodTree.setIfStatements(currentMethodStatements);
+		currentMethodStatements = methodParser.forStatementParser(methodToParse);
+		currentMethodTree.setForStatements(currentMethodStatements);
+		currentMethodStatements = methodParser.whileStatementParser(methodToParse);
+		currentMethodTree.setWhileStatements(currentMethodStatements);
+		currentMethodStatements = methodParser.doWhileStatementParser(methodToParse);
+		currentMethodTree.setDoWhileStatements(currentMethodStatements);
+		currentMethodStatements = methodParser.switchStatementParser(methodToParse);
+		currentMethodTree.setSwitchStatements(currentMethodStatements);
+		currentMethodStatements = methodParser.tryStatementParser(methodToParse);
+		currentMethodTree.setTryStatements(currentMethodStatements);
+
+		return currentMethodTree;
+	}
+
+
+	/**
+	 * THIS METHOD WILL BE TRUE IF THE lastNodeText EQUALS TO 'join' 
+	 * 
+	 * @param lastNodeText text containing the the lastNodeText
+	 * @return
+	 */
+	private boolean findJoinBeforeElseStatement(String lastNodeText){
+
+		if(lastNodeText.toLowerCase().equals("join"))
+			return true;
+
+		return false;
+
+	}
+
+
+
+
+
+	private void createJoinEdge(LinkedList<Node> currentNodes, Node newNode){
+		if(currentNodes.size() > 1 && currentNodes.getLast().getThisNodeText().toLowerCase().equals("join")){
+			Edge newEdge = this.createEdge(currentNodes.get(currentNodes.size()-1).getIdentifier(),newNode.getIdentifier());
+			this.allEdges.add(newEdge);
+		}
+	}
+
+	/**
+	 * THIS METHOD WILL FIND IF THE LAST NODE OF THE TREE IS A 'JOIN' NODE, WE DON'T NEED THESE KIND OF CASES
+	 * @return boolean: true or false
+	 */
+	private boolean islastNodeJoin(){
+		LinkedList<Node> allNodes = this.getAllNodes();
+
+		if(allNodes.size()>0 && allNodes.get(allNodes.size()-1).getThisNodeText().toLowerCase().equals("join"))
+			return true;
+		return false;
+	}
+
+	private int createJoinNode(LinkedList<Integer> identifiersForJoinNode,int biggestIdentifier){
+		//THIS PART IS VERY IMPORTANT, SINCE WE ARE BACK FROM RECURSION, WE NEED TO SKIP THE LINES WE ALREADY TRAVERSED, 
+		//TO KEEP THE NUMBERING CORRECTLY
+		//WE ALSO NEED TO CREATE A JOIN NODE
+
+		int previousNodeIdentifier = 0;
+
+		if(identifiersForJoinNode.size() > 0 ){
+			for(int j = 0; j<identifiersForJoinNode.size();j++){
+				previousNodeIdentifier = identifiersForJoinNode.get(j);
+				if(previousNodeIdentifier > biggestIdentifier)
+					biggestIdentifier = previousNodeIdentifier;
+			}
+			Node newNode = new Node("Join",(biggestIdentifier+1));
+			this.allNodes.add(newNode);//ADDING 'JOIN' NODE TO THE GLOBAL List
+
+			for(int i = 0; i<identifiersForJoinNode.size();i++){
+				previousNodeIdentifier = identifiersForJoinNode.get(i);
+				//if(isJoinNode(this.getAllNodes(), previousNodeIdentifier) == false){
+				if(doesNodeExist(previousNodeIdentifier, this.getAllNodes()) == true){
+					Edge newEdge = this.createEdge(previousNodeIdentifier, newNode.getIdentifier());
+					this.allEdges.add(newEdge);
+				}
+				//}
+			}
+		}
+
+		return (biggestIdentifier+1);
+	}
+
+
+
+	/**
+	 * IF FOR SOME REASON A JOIN GETS CREATED AT THE END, THIS WILL REMOVE THE JOIN AND ANY EDGE THAT CONNECTS TO IT
+	 */
+	private void removeLastJoin(){
+		LinkedList<Node> allNodes = this.getAllNodes();
+		String joinIdentifier = allNodes.get(allNodes.size()-1).getIdentifier() + "";
+		LinkedList<Edge> allEdges = this.getAllEdges();
+
+
+		for(int i = 0; i < allEdges.size();i++){
+			if(joinIdentifier.equals(allEdges.get(i).getTarget())){
+				allEdges.remove(i);
+				i = 0;
+			}
+
+		}
+		this.setAllEdges(allEdges);
+
+		allNodes.remove(allNodes.size()-1);
+		this.setAllNodes(allNodes);
+
+	}
+
+
+
+
+
+
+	private void createMissingEdges(LinkedList<Node> allNodes,int previousNodeIdentifier,LinkedList<Edge> allEdges){
+
+		int nodeIdentifier = 0;
+		boolean foundTarget = false;
+		Edge newEdge = null;
+		for(int i = 1; i < allNodes.size();i++){
+			nodeIdentifier = allNodes.get(i).getIdentifier();
+			foundTarget = false;
+			for(int j = 0; j < allEdges.size(); j++){
+				if(Integer.parseInt(allEdges.get(j).getTarget()) == nodeIdentifier)
+					foundTarget = true;
+			}
+
+			if(foundTarget == false && previousNodeIdentifier < nodeIdentifier && doesNodeExist(previousNodeIdentifier, allNodes) == true){
+				newEdge = this.createEdge(previousNodeIdentifier, nodeIdentifier);
+				allEdges.add(newEdge);
+				this.setAllEdges(allEdges);
+			}
+		}
+
+	}
+
+	private boolean findIntegerInList(LinkedList<Integer> list, int number){
+
+		for(int i=0;i<list.size();i++){
+			if(number == list.get(i))
+				return true;
+		}
+		return false;
+	}
+
+	private LinkedList<Integer> includeBreakIdentifierNodes(LinkedList<Integer> identifiersForJoinNode,LinkedList<Integer> breakIdentifiers){
+		boolean identifierFound = false;
+		for(int i = 0; i< breakIdentifiers.size();i++){
+			identifierFound = false;
+			for(int j = 0; j< identifiersForJoinNode.size(); j++){
+				if(breakIdentifiers.get(i) == identifiersForJoinNode.get(j))
+					identifierFound = true;
+			}
+			if(identifierFound == false)
+				identifiersForJoinNode.add(breakIdentifiers.get(i));
+		}
+
+		return identifiersForJoinNode;
+	}
+
+	/**
+	 * THIS METHOD WILL RETURN TRUE IF THE JAVA CONTENT SECTION EQUALS TO THE FULL METHOD PORTION
+	 * @param javaContentData THE CURRENT JAVA CONTENT DATA, THIS CAN BE AN IF, FOR, BUT WE ARE LOOKING FOR THIS TO BE THE WHOLE METHOD SECTION
+	 * @return TRUE OR FALSE
+	 */
+	private boolean isThisLastNode(String[] javaContentData){
+
+		if(javaContentData != null && this.isMethodCall(javaContentData[0]) == true)
+			return true;
+		return false;
+	}
+
+	private boolean isFirstNodeOfMethod(int nodeIdentifier){
+		LinkedList<Integer> allMethodSkipEdges = this.getMethodSkipEdges();
+
+		for(int i = 0; i< allMethodSkipEdges.size();i++){
+			if(nodeIdentifier == allMethodSkipEdges.get(i))
+				return true;
+		}
+		return false;
+
+	}
+	private boolean findIdentifierInNodes(LinkedList<Node> allNodes, int identifier){
+		for(int i=0;i< allNodes.size();i++){
+			if(identifier == allNodes.get(i).getIdentifier()){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private String getTextFromNode(LinkedList<Node> allNodes,int identifier){
+		for(int i=0;i< allNodes.size();i++){
+			if(identifier == allNodes.get(i).getIdentifier()){
+				return allNodes.get(i).getThisNodeText();
+			}
+		}
+		return "";
+	}
+	private LinkedList<String> getLinesOfCodeFromNode(LinkedList<Node> allNodes,int identifier){
+		for(int i=0;i< allNodes.size();i++){
+			if(identifier == allNodes.get(i).getIdentifier()){
+				return allNodes.get(i).getLinesOfCode();
+			}
+		}
+		return null;
+	}
+
+	private boolean isJoinNode(LinkedList<Node> allNodes,int identifier){
+
+		String nodeText = getTextFromNode(allNodes,identifier);
+		if(nodeText.toLowerCase().equals("join"))
+			return true;
+		return false;
+	}
+
+	private int getIdentifierFromText(LinkedList<Node> allNodes,String codeLine){
+
+		for(int i = (allNodes.size()-1); i > 0;i--){
+			LinkedList<String> linesOfCodePerNode = allNodes.get(i).getLinesOfCode();
+			for(int x = 0;linesOfCodePerNode != null && x< linesOfCodePerNode.size();x++){
+				if(codeLine.equals(linesOfCodePerNode.get(x)))
+					return allNodes.get(i).getIdentifier();
+			}
+		}
+		return 0;
+	}
+
+	private LinkedList<Statement> getTypeStatements(String statement,CodeBlockFeatures currentBlock){
+
+		LinkedList<Statement> allStatements = null;
+
+		if(statement.equals("for"))
+			allStatements = currentBlock.getCurrentMethodTree().getForStatements();
+		else if(statement.equals("while"))
+			allStatements = currentBlock.getCurrentMethodTree().getWhileStatements();
+		else if(statement.equals("if"))
+			allStatements = currentBlock.getCurrentMethodTree().getIfStatements();
+		else if(statement.equals("do"))
+			allStatements = currentBlock.getCurrentMethodTree().getDoWhileStatements();
+		else if(statement.equals("switch"))
+			allStatements = currentBlock.getCurrentMethodTree().getSwitchStatements();
+		else if(statement.equals("try"))
+			allStatements = currentBlock.getCurrentMethodTree().getTryStatements();
+
+		return allStatements;
+	}
+
+	private MethodTree updateMethodTree(String statement,CodeBlockFeatures currentBlock,LinkedList<Statement> newUpdatedStatements){
+
+		MethodTree newMethodTree = currentBlock.getCurrentMethodTree();
+
+		if(statement.equals("for"))
+			newMethodTree.setForStatements(newUpdatedStatements);
+		else if(statement.equals("while"))
+			newMethodTree.setWhileStatements(newUpdatedStatements);
+		else if(statement.equals("if"))
+			newMethodTree.setIfStatements(newUpdatedStatements);
+		else if(statement.equals("do"))
+			newMethodTree.setDoWhileStatements(newUpdatedStatements);
+		else if(statement.equals("switch"))
+			newMethodTree.setSwitchStatements(newUpdatedStatements);
+		else if(statement.equals("try"))
+			newMethodTree.setTryStatements(newUpdatedStatements);
+
+
+		return newMethodTree;
+
+
+
+	}
+
+	private boolean doesNodeExist(int identifier,LinkedList<Node> allNodes){
+
+		for(int i = 0;i<allNodes.size();i++){
+			if(identifier == allNodes.get(i).getIdentifier())
+				return true;
+		}
+
+		return false;
+	}
+
+	private int getHighestIdentifier(int currentIdentifier,LinkedList<Node> allNodes){
+		int highestIdentifier = currentIdentifier;
+
+		for(int i=0;i< allNodes.size();i++){
+			if(highestIdentifier < allNodes.get(i).getIdentifier())
+				highestIdentifier = allNodes.get(i).getIdentifier();
+		}
+
+		return highestIdentifier;
 	}
 
 

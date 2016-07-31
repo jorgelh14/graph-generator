@@ -26,14 +26,17 @@ public class ConditionalCFG extends CFGGraph {
 
 				}
 				else if(isElseIfStatement(linesOfCodePerNode.get(z))){
-					System.out.println("");
-					System.out.println("FOUND 'ELSE IF' STATEMENT: " + linesOfCodePerNode.get(z));
+					convertToConditional(currentNodes.get(i), currentEdges, currentNodes, "elseif", linesOfCodePerNode.get(z));
+					if(totalNumberofCurrentNodes != currentNodes.size())
+						i = -1;
 				}else if(isForStatement(linesOfCodePerNode.get(z))){
-					System.out.println("");
-					System.out.println("FOUND 'FOR' STATEMENT: " + linesOfCodePerNode.get(z));
+					convertToConditional(currentNodes.get(i), currentEdges, currentNodes, "for", linesOfCodePerNode.get(z));
+					if(totalNumberofCurrentNodes != currentNodes.size())
+						i = -1;
 				}else if(isWhileStatement(linesOfCodePerNode.get(z))){
-					System.out.println("");
-					System.out.println("FOUND 'WHILE' STATEMENT: " + linesOfCodePerNode.get(z));
+					convertToConditional(currentNodes.get(i), currentEdges, currentNodes, "while", linesOfCodePerNode.get(z));
+					if(totalNumberofCurrentNodes != currentNodes.size())
+						i = -1;
 				}else if(isDoWhileStatement(linesOfCodePerNode.get(z))){
 					System.out.println("");
 					System.out.println("FOUND 'DO WHILE' STATEMENT: " + linesOfCodePerNode.get(z));
@@ -48,16 +51,14 @@ public class ConditionalCFG extends CFGGraph {
 		LinkedList<Integer> targetIdentifiers = findAllTargetEdgesForConditionalNode(normalNode.getIdentifier(),allEdges);
 		LinkedList<Integer> sourceIdentifiers = findAllSourceEdgesForConditionalNode(normalNode.getIdentifier(),allEdges);
 		LinkedList<Node> statementNodes = new LinkedList<Node>();
-		if(typeOfStatement.equals("if")){
-			statementNodes = breakNodeInMultipleNodes(targetIdentifiers,normalNode,statementCodeLine);
-			if(statementNodes.size() > 1){
-				allEdges = removeNormalStatementEdges(allEdges, targetIdentifiers, normalNode);
-				allEdges = createConditionalEdges(allEdges, statementNodes, targetIdentifiers,sourceIdentifiers);
-				allNodes = removeNormalStatementNodes(allNodes,normalNode);
-				allNodes = createConditionalNodes(allNodes, statementNodes);
-				this.setAllEdges(allEdges);
-				this.setAllNodes(allNodes);
-			}
+		statementNodes = breakNodeInMultipleNodes(targetIdentifiers,normalNode,statementCodeLine);
+		if(statementNodes.size() > 1){
+			allEdges = removeNormalStatementEdges(allEdges, targetIdentifiers, normalNode);
+			allEdges = createConditionalEdges(allEdges, statementNodes, targetIdentifiers,sourceIdentifiers,typeOfStatement);
+			allNodes = removeNormalStatementNodes(allNodes,normalNode);
+			allNodes = createConditionalNodes(allNodes, statementNodes);
+			this.setAllEdges(allEdges);
+			this.setAllNodes(allNodes);
 
 		}
 	}
@@ -194,7 +195,7 @@ public class ConditionalCFG extends CFGGraph {
 		return allNodes;
 	}
 
-	private LinkedList<Edge> createConditionalEdges(LinkedList<Edge> allEdges,LinkedList<Node> newNodes,LinkedList<Integer> targetIdentifiers,LinkedList<Integer> sourceIdentifiers){
+	private LinkedList<Edge> createConditionalEdges(LinkedList<Edge> allEdges,LinkedList<Node> newNodes,LinkedList<Integer> targetIdentifiers,LinkedList<Integer> sourceIdentifiers,String typeOfStatement){
 		Edge newEdge;
 		for(int i = 0;i<newNodes.size();i++){
 			if((i+1) < newNodes.size()){
@@ -206,10 +207,14 @@ public class ConditionalCFG extends CFGGraph {
 		}
 		for(int j = 0;j<newNodes.size();j++){
 			for(int z = 0;z<targetIdentifiers.size();z++){
-				int source = newNodes.get(j).getIdentifier();
-				int target = targetIdentifiers.get(z);
-				newEdge = this.createEdge(source,target);
-				allEdges.add(newEdge);
+				if(newNodes.size()>1 && (typeOfStatement.equals("while") || typeOfStatement.equals("for")) && z==(targetIdentifiers.size()-1) && j == 0){
+					//DO NOTHING
+				}else{
+					int source = newNodes.get(j).getIdentifier();
+					int target = targetIdentifiers.get(z);
+					newEdge = this.createEdge(source,target);
+					allEdges.add(newEdge);
+				}
 			}
 		}
 		if(newNodes.size() > 0){

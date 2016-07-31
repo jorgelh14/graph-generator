@@ -45,7 +45,7 @@ public class TestJava {
 
 		System.out.println("HELLO EVERYONE");
 		int z = 0;
-		while(z<10){
+		while(z < 10 || z < 20){
 			System.out.println("HELLO # " + z);
 			z++;
 		}
@@ -72,6 +72,12 @@ public class TestJava {
 	public void printStrings(){
 
 		try{
+			
+			try{
+				System.out.println("HELLO INNER TRY!");
+			}catch(Exception x){
+				x.printStackTrace();
+			}
 
 			System.out.println("1");
 			System.out.println("2");

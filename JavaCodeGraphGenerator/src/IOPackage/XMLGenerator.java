@@ -71,7 +71,8 @@ public class XMLGenerator extends IOManager{
 				LinkedList<Node> nodesWithNoEdge = getNodesWithNoEdges(allNodes, allEdges);
 				
 				for(int x = 0;x< nodesWithNoEdge.size();x++){
-					writer.write( "\t<links>" + "\n" + "\t\t<source>" + nodesWithNoEdge.get(x).getIdentifier() + "</source>\n" + "\t\t<target></target>" + "\n\t</links>\n" );
+					String lonerNodeText = nodesWithNoEdge.get(x).getThisNodeText();
+					writer.write( "\t<links>" + "\n" + "\t\t<source>" + lonerNodeText + "</source>\n" + "\t\t<target></target>" + "\n\t</links>\n" );
 					
 				}
 				writer.write("</root>");

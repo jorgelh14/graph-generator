@@ -14,9 +14,11 @@ import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
+import GraphElements.Statement;
+
 public class JavaClassParser {
 
-	LinkedList<String> javaCodeList = new LinkedList<String>();
+	LinkedList<Statement> javaCodeList = new LinkedList<Statement>();
 	public JavaClassParser(){
 
 	}
@@ -24,20 +26,20 @@ public class JavaClassParser {
 	/**
 	 * @return the javaCodeList
 	 */
-	public LinkedList<String> getJavaCodeList() {
+	public LinkedList<Statement> getJavaCodeList() {
 		return javaCodeList;
 	}
 
 	/**
 	 * @param javaCodeList the javaCodeList to set
 	 */
-	public void setJavaCodeList(LinkedList<String> javaCodeList) {
+	public void setJavaCodeList(LinkedList<Statement> javaCodeList) {
 		this.javaCodeList = javaCodeList;
 	}
 
-	public LinkedList<String> methodStatementParser(String fileData){
+	public LinkedList<Statement> methodStatementParser(String fileData){
 
-		javaCodeList = new LinkedList<String>();
+		javaCodeList = new LinkedList<Statement>();
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(fileData.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -51,7 +53,7 @@ public class JavaClassParser {
 
 			public boolean visit(MethodDeclaration node) {
 
-				javaCodeList.add(node.toString());
+				javaCodeList.add(new Statement(node.toString(),false));
 				return true;
 			}
 
@@ -62,9 +64,9 @@ public class JavaClassParser {
 
 	}
 
-	public LinkedList<String> ifStatementParser(String MethodData){
+	public LinkedList<Statement> ifStatementParser(String MethodData){
 
-		javaCodeList = new LinkedList<String>();
+		javaCodeList = new LinkedList<Statement>();
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(MethodData.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -78,7 +80,7 @@ public class JavaClassParser {
 
 			public boolean visit(IfStatement node) {
 
-				javaCodeList.add(node.toString());
+				javaCodeList.add(new Statement(node.toString(),false));
 				return true;
 			}
 
@@ -89,9 +91,9 @@ public class JavaClassParser {
 
 	}
 
-	public LinkedList<String> forStatementParser(String MethodData){
+	public LinkedList<Statement> forStatementParser(String MethodData){
 
-		javaCodeList = new LinkedList<String>();
+		javaCodeList = new LinkedList<Statement>();
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(MethodData.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -105,7 +107,7 @@ public class JavaClassParser {
 
 			public boolean visit(ForStatement node) {
 
-				javaCodeList.add(node.toString());
+				javaCodeList.add(new Statement(node.toString(),false));
 				return true;
 			}
 
@@ -116,9 +118,9 @@ public class JavaClassParser {
 
 	}
 
-	public LinkedList<String> whileStatementParser(String MethodData){
+	public LinkedList<Statement> whileStatementParser(String MethodData){
 
-		javaCodeList = new LinkedList<String>();
+		javaCodeList = new LinkedList<Statement>();
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(MethodData.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -132,7 +134,7 @@ public class JavaClassParser {
 
 			public boolean visit(WhileStatement node) {
 
-				javaCodeList.add(node.toString());
+				javaCodeList.add(new Statement(node.toString(),false));
 				return true;
 			}
 
@@ -143,9 +145,9 @@ public class JavaClassParser {
 
 	}
 
-	public LinkedList<String> doWhileStatementParser(String MethodData){
+	public LinkedList<Statement> doWhileStatementParser(String MethodData){
 
-		javaCodeList = new LinkedList<String>();
+		javaCodeList = new LinkedList<Statement>();
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(MethodData.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -159,7 +161,7 @@ public class JavaClassParser {
 
 			public boolean visit(DoStatement node) {
 
-				javaCodeList.add(node.toString());
+				javaCodeList.add(new Statement(node.toString(),false));
 				return true;
 			}
 
@@ -170,9 +172,9 @@ public class JavaClassParser {
 
 	}
 
-	public LinkedList<String> switchStatementParser(String MethodData){
+	public LinkedList<Statement> switchStatementParser(String MethodData){
 
-		javaCodeList = new LinkedList<String>();
+		javaCodeList = new LinkedList<Statement>();
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(MethodData.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -186,7 +188,7 @@ public class JavaClassParser {
 
 			public boolean visit(SwitchStatement node) {
 
-				javaCodeList.add(node.toString());
+				javaCodeList.add(new Statement(node.toString(),false));
 				return true;
 			}
 
@@ -197,9 +199,9 @@ public class JavaClassParser {
 
 	}
 
-	public LinkedList<String> tryStatementParser(String MethodData){
+	public LinkedList<Statement> tryStatementParser(String MethodData){
 
-		javaCodeList = new LinkedList<String>();
+		javaCodeList = new LinkedList<Statement>();
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(MethodData.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -213,7 +215,7 @@ public class JavaClassParser {
 
 			public boolean visit(TryStatement node) {
 
-				javaCodeList.add(node.toString());
+				javaCodeList.add(new Statement(node.toString(),false));
 				return true;
 			}
 

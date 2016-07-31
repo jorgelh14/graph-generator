@@ -20,7 +20,7 @@ public abstract class CFGGraph {
 	protected boolean breaksFound;
 	protected LinkedList<Integer> breakIdentifiers;
 	protected LinkedList<Integer> methodSkipEdges;
-	
+
 	protected final int stackOverFlowLimit = 1000;
 
 
@@ -163,21 +163,6 @@ public abstract class CFGGraph {
 
 	}
 
-	/**
-	 * THIS METHOD WILL BE TRUE IF THE lastNodeText EQUALS TO 'join' 
-	 * 
-	 * @param lastNodeText text containing the the lastNodeText
-	 * @return
-	 */
-	protected boolean findJoinBeforeElseStatement(String lastNodeText){
-
-		if(lastNodeText.toLowerCase().equals("join"))
-			return true;
-
-		return false;
-
-	}
-
 	protected boolean isMethodCall(String codeLine){
 
 		if(codeLine == null)
@@ -223,7 +208,7 @@ public abstract class CFGGraph {
 
 		return false;
 	}
-	
+
 	protected boolean isElseIfStatement(String codeLine){
 
 		if(codeLine == null)
@@ -255,8 +240,25 @@ public abstract class CFGGraph {
 
 		if(codeLine.toLowerCase().contains("while") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && codeLine.toLowerCase().contains("{") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
-		
+
 		if(codeLine.toLowerCase().contains("while") && codeLine.toLowerCase().contains("(") && codeLine.toLowerCase().contains(")") && !codeLine.toLowerCase().contains(";") && !codeLine.toLowerCase().contains("system.out"))
+			return true;
+
+		return false;
+	}
+
+	protected boolean isCommentLine(String codeLine){
+		
+		if(codeLine == null)
+			return false;
+		
+		if(codeLine.substring(0, 2).trim().equals("//") || codeLine.substring(1, 3).trim().equals("//"))
+			return true;
+		if(codeLine.substring(0, 2).trim().equals("/*") || codeLine.substring(1, 3).trim().equals("/*"))
+			return true;
+		if(codeLine.substring(0, 1).trim().equals("*") || codeLine.substring(1, 2).trim().equals("*"))
+			return true;
+		if(codeLine.substring(0, 2).trim().equals("*/") || codeLine.substring(1, 3).trim().equals("*"))
 			return true;
 
 		return false;
@@ -337,13 +339,45 @@ public abstract class CFGGraph {
 		if(codeLine == null)
 			return false;
 
-		if(codeLine.toLowerCase().contains("break") && codeLine.toLowerCase().contains(";") && !codeLine.toLowerCase().contains("system.out"))
+		if(codeLine.toLowerCase().contains("break;") && !codeLine.toLowerCase().contains("system.out"))
 			return true;
 
 		return false;
 	}
 
-	
+	protected boolean isSkipLine(String codeLine, int pointer){
+
+		if(isMethodCall(codeLine) == true){
+			return true;
+		}
+		if(isIfStatement(codeLine.trim()) == true && pointer == 0){
+			return true;
+		}
+		if(isTryStatement(codeLine.trim()) == true && pointer == 0){
+			return true;
+		}
+		if(isSwitchStatement(codeLine.trim()) == true && pointer == 0){
+			return true;
+		}
+		if(isDoWhileStatement(codeLine.trim()) == true && pointer == 0){
+			return true;
+		}
+		if(isForStatement(codeLine.trim()) == true && pointer == 0){
+			return true;
+		}
+		if(isWhileStatement(codeLine.trim()) == true && pointer == 0){
+			return true;
+		}
+		if(codeLine.trim().equals("{") || codeLine.trim().equals("}")){
+			return true;
+		}
+		if(isCommentLine(codeLine) == true)
+			return true;
+
+		return false;
+	}
+
+
 
 	protected Node closeNode(Node thisNode,LinkedList<String> linesOfCode){
 		thisNode.setLinesOfCode(linesOfCode);
@@ -360,191 +394,9 @@ public abstract class CFGGraph {
 
 	}
 
-	protected void createJoinEdge(LinkedList<Node> currentNodes, Node newNode){
-		if(currentNodes.size() > 1 && currentNodes.getLast().getThisNodeText().toLowerCase().equals("join")){
-			Edge newEdge = this.createEdge(currentNodes.get(currentNodes.size()-1).getIdentifier(),newNode.getIdentifier());
-			this.allEdges.add(newEdge);
-		}
+	protected Node createNode(int nodeNumbering, int identifier){
+		Node newNode = new Node(nodeNumbering+",",identifier);
+		return newNode;
 	}
 
-	/**
-	 * THIS METHOD WILL FIND IF THE LAST NODE OF THE TREE IS A 'JOIN' NODE, WE DON'T NEED THESE KIND OF CASES
-	 * @return boolean: true or false
-	 */
-	protected boolean islastNodeJoin(){
-		LinkedList<Node> allNodes = this.getAllNodes();
-
-		if(allNodes.size()>0 && allNodes.get(allNodes.size()-1).getThisNodeText().toLowerCase().equals("join"))
-			return true;
-		return false;
-	}
-
-	protected int createJoinNode(LinkedList<Integer> identifiersForJoinNode,int biggestIdentifier){
-		//THIS PART IS VERY IMPORTANT, SINCE WE ARE BACK FROM RECURSION, WE NEED TO SKIP THE LINES WE ALREADY TRAVERSED, 
-		//TO KEEP THE NUMBERING CORRECTLY
-		//WE ALSO NEED TO CREATE A JOIN NODE
-
-		int previousNodeIdentifier = 0;
-
-		if(identifiersForJoinNode.size() > 0 ){
-			for(int j = 0; j<identifiersForJoinNode.size();j++){
-				previousNodeIdentifier = identifiersForJoinNode.get(j);
-				if(previousNodeIdentifier > biggestIdentifier)
-					biggestIdentifier = previousNodeIdentifier;
-			}
-			Node newNode = new Node("Join",(biggestIdentifier+1));
-			this.allNodes.add(newNode);//ADDING 'JOIN' NODE TO THE GLOBAL List
-
-			for(int i = 0; i<identifiersForJoinNode.size();i++){
-				previousNodeIdentifier = identifiersForJoinNode.get(i);
-				Edge newEdge = this.createEdge(previousNodeIdentifier, newNode.getIdentifier());
-				this.allEdges.add(newEdge);
-			}
-		}
-
-		return (biggestIdentifier+1);
-	}
-
-
-
-	/**
-	 * IF FOR SOME REASON A JOIN GETS CREATED AT THE END, THIS WILL REMOVE THE JOIN AND ANY EDGE THAT CONNECTS TO IT
-	 */
-	protected void removeLastJoin(){
-		LinkedList<Node> allNodes = this.getAllNodes();
-		String joinIdentifier = allNodes.get(allNodes.size()-1).getIdentifier() + "";
-		LinkedList<Edge> allEdges = this.getAllEdges();
-
-
-		for(int i = 0; i < allEdges.size();i++){
-			if(joinIdentifier.equals(allEdges.get(i).getTarget())){
-				allEdges.remove(i);
-				i = 0;
-			}
-
-		}
-		this.setAllEdges(allEdges);
-
-		allNodes.remove(allNodes.size()-1);
-		this.setAllNodes(allNodes);
-
-	}
-
-
-
-
-	
-
-	protected void createMissingEdges(LinkedList<Node> allNodes,int previousNodeIdentifier,LinkedList<Edge> allEdges){
-
-		int nodeIdentifier = 0;
-		boolean foundTarget = false;
-		Edge newEdge = null;
-		for(int i = 1; i < allNodes.size();i++){
-			nodeIdentifier = allNodes.get(i).getIdentifier();
-			foundTarget = false;
-			for(int j = 0; j < allEdges.size(); j++){
-				if(Integer.parseInt(allEdges.get(j).getTarget()) == nodeIdentifier)
-					foundTarget = true;
-			}
-
-			if(foundTarget == false && previousNodeIdentifier < nodeIdentifier ){
-				newEdge = this.createEdge(previousNodeIdentifier, nodeIdentifier);
-				allEdges.add(newEdge);
-				this.setAllEdges(allEdges);
-			}
-		}
-
-	}
-
-	protected boolean findIntegerInList(LinkedList<Integer> list, int number){
-
-		for(int i=0;i<list.size();i++){
-			if(number == list.get(i))
-				return true;
-		}
-		return false;
-	}
-
-	protected LinkedList<Integer> includeBreakIdentifierNodes(LinkedList<Integer> identifiersForJoinNode,LinkedList<Integer> breakIdentifiers){
-		boolean identifierFound = false;
-		for(int i = 0; i< breakIdentifiers.size();i++){
-			identifierFound = false;
-			for(int j = 0; j< identifiersForJoinNode.size(); j++){
-				if(breakIdentifiers.get(i) == identifiersForJoinNode.get(j))
-					identifierFound = true;
-			}
-			if(identifierFound == false)
-				identifiersForJoinNode.add(breakIdentifiers.get(i));
-		}
-
-		return identifiersForJoinNode;
-	}
-
-	/**
-	 * THIS METHOD WILL RETURN TRUE IF THE JAVA CONTENT SECTION EQUALS TO THE FULL METHOD PORTION
-	 * @param javaContentData THE CURRENT JAVA CONTENT DATA, THIS CAN BE AN IF, FOR, BUT WE ARE LOOKING FOR THIS TO BE THE WHOLE METHOD SECTION
-	 * @return TRUE OR FALSE
-	 */
-	protected boolean isThisLastNode(String[] javaContentData){
-
-		if(javaContentData != null && this.isMethodCall(javaContentData[0]) == true)
-			return true;
-		return false;
-	}
-
-	protected boolean isFirstNodeOfMethod(int nodeIdentifier){
-		LinkedList<Integer> allMethodSkipEdges = this.getMethodSkipEdges();
-
-		for(int i = 0; i< allMethodSkipEdges.size();i++){
-			if(nodeIdentifier == allMethodSkipEdges.get(i))
-				return true;
-		}
-		return false;
-
-	}
-	protected boolean findIdentifierInNodes(LinkedList<Node> allNodes, int identifier){
-		for(int i=0;i< allNodes.size();i++){
-			if(identifier == allNodes.get(i).getIdentifier()){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	protected String getTextFromNode(LinkedList<Node> allNodes,int identifier){
-		for(int i=0;i< allNodes.size();i++){
-			if(identifier == allNodes.get(i).getIdentifier()){
-				return allNodes.get(i).getThisNodeText();
-			}
-		}
-		return "";
-	}
-	protected LinkedList<String> getLinesOfCodeFromNode(LinkedList<Node> allNodes,int identifier){
-		for(int i=0;i< allNodes.size();i++){
-			if(identifier == allNodes.get(i).getIdentifier()){
-				return allNodes.get(i).getLinesOfCode();
-			}
-		}
-		return null;
-	}
-
-	protected boolean isJoinNode(LinkedList<Node> allNodes,int identifier){
-
-		if(allNodes.get(identifier).getThisNodeText().toLowerCase().equals("join"))
-			return true;
-		return false;
-	}
-	
-	protected int getIdentifierFromText(LinkedList<Node> allNodes,String codeLine){
-		
-		for(int i = (allNodes.size()-1); i > 0;i--){
-			LinkedList<String> linesOfCodePerNode = allNodes.get(i).getLinesOfCode();
-			for(int x = 0;linesOfCodePerNode != null && x< linesOfCodePerNode.size();x++){
-				if(codeLine.equals(linesOfCodePerNode.get(x)))
-					return allNodes.get(i).getIdentifier();
-			}
-		}
-		return 0;
-	}
 }

@@ -30,38 +30,46 @@ public class CFGVisualization extends IOManager {
 	private GraphViz createGraphViz(String filePath){
 		GraphViz graph = new GraphViz();
 		graph.addln(graph.start_graph());
-		 NodeList sourceList = (getXmlRoot(filePath)).getElementsByTagName("source");
-		 NodeList targetList = (getXmlRoot(filePath)).getElementsByTagName("target");
-		 for(int i=0;i<sourceList.getLength();i++){
-	         NodeList sourceSub = sourceList.item(i).getChildNodes();
-	         String sourceName = sourceSub.item(0).getNodeValue();
-	         NodeList targetSub = targetList.item(i).getChildNodes();
-	         graph = addNodesToGraph(graph,sourceName,targetSub);
-		 }
-	    graph.addln(graph.end_graph());
+		NodeList sourceList = null;
+		NodeList targetList = null;
+		try{
+			sourceList = (getXmlRoot(filePath)).getElementsByTagName("source");
+			targetList = (getXmlRoot(filePath)).getElementsByTagName("target");
+		}catch(NullPointerException e){
+			graph.addln(graph.end_graph());
+			graph.increaseDpi();
+			return graph;
+		}
+		for(int i=0;i<sourceList.getLength();i++){
+			NodeList sourceSub = sourceList.item(i).getChildNodes();
+			String sourceName = sourceSub.item(0).getNodeValue();
+			NodeList targetSub = targetList.item(i).getChildNodes();
+			graph = addNodesToGraph(graph,sourceName,targetSub);
+		}
+		graph.addln(graph.end_graph());
 		//System.out.println(graph.getDotSource());//testing purposes
 		graph.increaseDpi();   // 106 dpi from java api
 		return graph;
-}
-	
+	}
+
 	private GraphViz addNodesToGraph(GraphViz graph, String sourceName, NodeList targetSub){
-		 if(targetSub.getLength()>0){
-	         String targetName = targetSub.item(0).getNodeValue();
-        	 graph.addln("\""+sourceName+"\""+"->"+"\""+targetName+"\"");
-	         if(targetName.startsWith("Join")){
-	        	 graph.addln("\""+targetName+"\""+"[label=\"Join\"]");
-	         }
-	         if(sourceName.startsWith("Join")){
-	        	 graph.addln("\""+sourceName+"\""+"[label=\"Join\"]");
-	         }
-         }
-         else{
-        	 graph.addln("\""+sourceName+"\";");
-        	 if(sourceName.startsWith("Join")){
-	        	 graph.addln("\""+sourceName+"\""+"[label=\"Join\"]");
-	         }
-         }
-		 return graph;
+		if(targetSub.getLength()>0){
+			String targetName = targetSub.item(0).getNodeValue();
+			graph.addln("\""+sourceName+"\""+"->"+"\""+targetName+"\"");
+			if(targetName.startsWith("Join")){
+				graph.addln("\""+targetName+"\""+"[label=\"Join\"]");
+			}
+			if(sourceName.startsWith("Join")){
+				graph.addln("\""+sourceName+"\""+"[label=\"Join\"]");
+			}
+		}
+		else{
+			graph.addln("\""+sourceName+"\";");
+			if(sourceName.startsWith("Join")){
+				graph.addln("\""+sourceName+"\""+"[label=\"Join\"]");
+			}
+		}
+		return graph;
 	}
 	public org.w3c.dom.Element getXmlRoot(String filePath){
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -80,5 +88,5 @@ public class CFGVisualization extends IOManager {
 		return document.getDocumentElement();
 	}
 
-	
+
 }
