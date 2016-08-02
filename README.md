@@ -7,12 +7,12 @@ Readme
 Before running application
 ---------------------------------------
 To compile the code, eclipse will be needed. Download eclipse through the following link:
-https://www.eclipse.org/downloads/eclipse-packages/\n
+https://www.eclipse.org/downloads/eclipse-packages/
 The JAR files required to run the application can be downloaded through this link:
-http://programcreek.com/downloads/lib.zip\n
-The jar files are for an external java parser\n
-Import the graph-generator (ours) project by going to file->import->General->Existing Projects->select root file->browse->finish\n
-Right click on the imported project->properties->Java Build Path->Add External jars->select all the jars previously downloaded.\n
+http://programcreek.com/downloads/lib.zip
+The jar files are for an external java parser
+Import the graph-generator (ours) project by going to file->import->General->Existing Projects->select root file->browse->finish
+Right click on the imported project->properties->Java Build Path->Add External jars->select all the jars previously downloaded.
 
 Running application
 ------------------------------------------
